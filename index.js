@@ -51,14 +51,14 @@ app.delete("/api/foods/:id", (req, res) => {
 })
 
 function nameExist(name) {
-    return DB.find({}).then(persons => {
+    return (DB.find({}).then(persons => {
         return persons.forEach(person => {
-            if (formatFood(person).name === name) {
-                return true
-            }
-        })
-        return false
-    })
+                if (formatFood(person).name === name) {
+                    return true
+                }
+            })
+            return false
+    }))
 }
 
 app.post("/api/foods", (req, res) => {
