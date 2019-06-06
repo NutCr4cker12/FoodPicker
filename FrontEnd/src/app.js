@@ -3,7 +3,7 @@ import axios from 'axios';
 import "./index.css";
 
 // const URL = "http://localhost:3001/api/foods"
-const URL = "https://kisaeeheifoodpicker.herokuapp.com"
+const URL = "/"
 
 const MAINTYPEFILTERS = ["liha", "kana", "kala", "kasvis"]
 const SIDETYPEFILTERS = ["pasta", "peruna", "riisi", "salaatti", "bataatti"]
