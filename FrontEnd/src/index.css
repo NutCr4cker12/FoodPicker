@@ -1,0 +1,8 @@
+table {
+    display: grid;
+    grid-auto-flow: dense;
+}
+
+.maintype {
+    color: blue;
+}

@@ -30,7 +30,6 @@ app.get("/api/foods", (req, res) => {
 
 app.get("/api/foods/:id", (req, res) => {
     const id = req.params.id
-    console.log(id)
     DB.findById(id).then(person => {
         res.json(formatFood(person))
     })
@@ -38,9 +37,7 @@ app.get("/api/foods/:id", (req, res) => {
 
 app.delete("/api/foods/:id", (req, res) => {
     const id = req.params.id
-
     DB.findByIdAndDelete(id, function (err, doc) {
-        console.log(doc)
         if (err) {
             res.status(400).json({error: "No match with id: " + id})
         } else {
@@ -49,17 +46,6 @@ app.delete("/api/foods/:id", (req, res) => {
         }
     })
 })
-
-function nameExist(name) {
-    return (DB.find({}).then(persons => {
-        return persons.forEach(person => {
-                if (formatFood(person).name === name) {
-                    return true
-                }
-            })
-            return false
-    }))
-}
 
 app.post("/api/foods", (req, res) => {
     const food = req.body
