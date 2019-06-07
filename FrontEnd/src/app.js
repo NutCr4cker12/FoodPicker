@@ -2,16 +2,18 @@ import React from 'react';
 import axios from 'axios';
 import "./index.css";
 import { isNumber } from 'util';
-import { CSSTransitionGroup } from 'react-trasition-group';
 
-import { faHome } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { TransitionGroup } from 'react-transition-group';
+import { CSSTransition } from 'react-transition-group';
+
+// import { faHome } from "@fortawesome/free-solid-svg-icons";
+// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import cow from "./images/liha2.png"
 import cow_x from "./images/liha_x.png"
 
-const URL = "http://localhost:3001/api/foods"
-// const URL = "/api/foods"
+//const URL = "http://localhost:3001/api/foods"
+const URL = "/api/foods"
 
 const MAINTYPEFILTERS = ["liha", "kana", "kala", "kasvis"]
 const SIDETYPEFILTERS = ["pasta", "peruna", "riisi", "salaatti", "bataatti"]
@@ -118,66 +120,47 @@ class App extends React.Component {
     FilterSelected = () => {
         return (
             this.state.filtersPressed.map((type, i) =>
-                <button onClick={this.DeactivateFilter.bind(this, type)}
-                    key={i}>{type==="liha" ? <img src={cow_x} alt="cow" height="20" width="38"></img> :
-                    type==="pasta" ? <img src="http://pngimg.com/uploads/pasta/pasta_PNG91.png"
-                        alt="pasta" height="20" width="20"></img> :
-                        type}</button>
+                <CSSTransition
+                    key={i}
+                    classNames="filtered"
+                    timeout={{ enter: 500, exit: 300}}
+                >
+                    <button onClick={this.DeactivateFilter.bind(this, type)}
+                        key={i}>{type==="liha" ? <img src={cow_x} alt="cow" height="20" width="38"></img> :
+                        type==="pasta" ? <img src="http://pngimg.com/uploads/pasta/pasta_PNG91.png"
+                            alt="pasta" height="20" width="20"></img> :
+                            type}</button>
+                </CSSTransition>
             )
         )
     }
 
     FilterAvailable = () => {
-        const Mains = () => {
-            return (
-                this.state.maintypefilter.off.map((type, i) =>
-                <button onClick={this.ActivateFilter.bind(this, type)}
-                    key={i}>{type}</button>
-            ))
-        }
-        const Side = () => {
-            return (
-                this.state.sidetypefilter.off.map((type, i) =>
-                    <button onClick={this.ActivateFilter.bind(this, type)}
-                    key={i}>{type}</button>
-                )
+        const CreateRow = (name, arr) => {
+            const FillRow = (arr) => (
+                arr.map((type, i) =>
+                    <CSSTransition key={i} classNames="filtered" timeout={{ enter: 500, exit: 300}}>
+                        <button onClick={this.ActivateFilter.bind(this, type)} key={i}>{type}</button>
+                    </CSSTransition>
+                    )
             )
-        }
-        const Speed = () => {
             return (
-                this.state.speedtypefilter.off.map((type, i) =>
-                    <button onClick={this.ActivateFilter.bind(this, type)}
-                    key={i}>{type}</button>
-                )
-            )
-        }
-        const Day = () => {
-            return (
-                this.state.daytypefilter.off.map((type, i) =>
-                    <button onClick={this.ActivateFilter.bind(this, type)}
-                    key={i}>{type}</button>
-                )
+                arr.length !== 0 ?
+                    <table><tbody><tr><td className="filter_available">{name}</td><td>{FillRow(arr)}</td></tr></tbody></table>
+                : null
             )
         }
         return (
-                    <div>
-                        <form>
-                            <input value={this.state.textfilter}
-                                onChange={this.updateTextFilter}/>
-                        </form>
-                        {this.state.maintypefilter.off.length !== 0 ?
-                            <table><tbody><tr><td className="filter_available">main:</td><td><Mains />
-                            </td></tr></tbody></table> : null}
-                        {this.state.sidetypefilter.off.length !== 0 ?
-                            <table><tbody><tr><td className="filter_available">side:</td><td><Side />
-                            </td></tr></tbody></table> : null}
-                        {this.state.speedtypefilter.off.length !== 0 ?
-                            <table><tbody><tr><td className="filter_available">speed:</td><td><Speed />
-                            </td></tr></tbody></table> : null}
-                        {this.state.daytypefilter.off.length !== 0 ?
-                            <table><tbody><tr><td className="filter_available">days:</td><td><Day />
-                            </td></tr></tbody></table> : null}
-                    </div>
+                <div>
+                    <form>
+                        <input value={this.state.textfilter}
+                            onChange={this.updateTextFilter}/>
+                    </form>
+                    {CreateRow("main", this.state.maintypefilter.off)}
+                    {CreateRow("side", this.state.sidetypefilter.off)}
+                    {CreateRow("speed", this.state.speedtypefilter.off)}
+                    {CreateRow("days", this.state.daytypefilter.off)}
+                </div>
         )
     }
 
@@ -280,6 +263,9 @@ class App extends React.Component {
     }
 
     render() {
+        const filtersSelected = this.FilterSelected()
+        const filtersAvailable = this.FilterAvailable()
+
         return (
             <div>
                 <div id="filtermenu" className="filtermenu">
@@ -290,12 +276,15 @@ class App extends React.Component {
                             onClick={this.dropDownClick.bind(this)}>
                                 Filters</i>
                         <div>
-                            {this.state.dropdownpressed ? <this.FilterAvailable /> : null}
+                            {this.state.dropdownpressed ?
+                                <TransitionGroup>{filtersAvailable}</TransitionGroup> : null}
                         </div>
                     </div>
                 </div>
                 <div>
-                    <this.FilterSelected />
+                    <TransitionGroup>
+                        {filtersSelected}
+                    </TransitionGroup>
                 </div>
                 <div>
                     <table>

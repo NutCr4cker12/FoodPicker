@@ -40,3 +40,17 @@ table {
     color: blueviolet;
 }
 
+.filtered-enter {
+    opacity: 0.01;
+}
+.filtered-enter.filtered-enter-active {
+    opacity: 1;
+    transition: opacity 300ms ease-in;
+}
+.filtered-exit {
+    opacity: 1;
+}
+.filtered-exit.filtered-exit-active {
+    opacity: 0.01;
+    transition: opacity 300ms ease-in;
+}

@@ -2,7 +2,6 @@ const mongoose = require("mongoose")
 
 const url = process.env.MONGODB_URL
 
-
 mongoose.connect(url)
 mongoose.Promise = global.Promise
 
@@ -16,7 +15,6 @@ const db = mongoose.model("foodpicker", {
     timeseaten: Number,
     lasteaten: Date
 })
-
 /*
 db.find({}).then(food => {
     var target = undefined
