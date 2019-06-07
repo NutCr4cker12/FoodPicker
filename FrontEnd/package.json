@@ -1,5 +1,5 @@
 {
-  "name": "FoodPickerFrontEnd",
+  "name": "foodpickerfrontend",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -29,5 +29,5 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "https://localhost:3002"
+  "proxy": "https://localhost:3000"
 }

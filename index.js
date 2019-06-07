@@ -30,8 +30,8 @@ app.get("/api/foods", (req, res) => {
 
 app.get("/api/foods/:id", (req, res) => {
     const id = req.params.id
-    DB.findById(id).then(person => {
-        res.json(formatFood(person))
+    DB.findById(id).then(food => {
+        res.json(formatFood(food))
     })
 })
 
@@ -47,27 +47,19 @@ app.delete("/api/foods/:id", (req, res) => {
     })
 })
 
-app.post("/api/foods", (req, res) => {
+app.post("/api/foods/select", (req, res) => {
     const food = req.body
-    if (!food.name || food.name.length < 1) {
-        return res.status(400).json({error: "name is missing"})
-    }
-    const newfood = new DB({
-        name: food.name,
-        link: food.link,
-        maintype: food.maintype,
-        sidetype: food.sidetype,
-        foodamount: food.foodamount,
-        time: food.time,
-        timeseaten: food.timeseaten,
-        lasteaten: food.lasteaten
-    })
-    newfood.save().then(addedperson => {
-        console.log("adding food " + food.name + " to the directory")
-        res.json(formatFood(addedperson))
-    })
-
+    console.log(food.id)
+    food.lasteaten = new Date().toDateString()
+    food.timeseaten = food.timeseaten + 1
+    console.log("backend updating: " + food.timeseaten)
+    DB.findOneAndUpdate({_id: food.id}, food, {upsert:true},
+            function(err, doc){
+                if (err) return res.status(400).json({error: err})
+                else res.status(204).end()
+            })
 })
+
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
