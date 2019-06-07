@@ -1,1 +1,0 @@
-{"version":3,"sources":["index.css"],"names":[],"mappings":"AAAA,MACI,YAAa,CACb,oBACJ,CAEA,UACI,UACJ","file":"main.e8f9065a.chunk.css","sourcesContent":["table {\r\n    display: grid;\r\n    grid-auto-flow: dense;\r\n}\r\n\r\n.maintype {\r\n    color: blue;\r\n}"]}
