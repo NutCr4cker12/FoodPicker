@@ -50,10 +50,9 @@ app.delete("/api/foods/:id", (req, res) => {
 app.post("/api/foods/select", (req, res) => {
     const food = req.body
     console.log(food.id)
-    food.lasteaten = new Date().toDateString()
     food.timeseaten = food.timeseaten + 1
     console.log("backend updating: " + food.timeseaten)
-    DB.findOneAndUpdate({_id: food.id}, food, {upsert:true},
+    DB.findOneAndUpdate({_id: food.id}, food, {upsert:true, useFindAndModify: false},
             function(err, doc){
                 if (err) return res.status(400).json({error: err})
                 else res.status(204).end()

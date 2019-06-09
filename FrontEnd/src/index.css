@@ -3,22 +3,18 @@ table {
     grid-auto-flow: dense;
 }
 
-.filter_available {
-    font-size: 15px
-}
-
 .filtermenu {
     display: flex;
     width: 100%;
-    height: 50px;
+    height: 10px;
     margin: 0 0 0 -20px;
-    transition-property: height;
-    transition-duration: 0.25s;
-    transition-timing-function: ease-in-out;
+    opacity: 0.01;
+    transition: all 250ms ease-in-out;
 }
 
 .filtermenu.is-nav-open {
-    height: 180px;
+    height: 150px;
+    opacity: 1;
 }
 
 .nav {
@@ -28,16 +24,15 @@ table {
     padding: 20px;
 }
 
-.nav__icon {
+.menu-text {
     position: relative;
-    top: 0;
-    padding: 5px;
+    padding: 10px;
     cursor: pointer;
     transition: color .3s;
 }
 
-.nav__icon:hover {
-    color: blueviolet;
+.menu-text:hover {
+    color: rgba(15, 184, 0, 0.815);
 }
 
 .filtered-enter {
@@ -53,4 +48,49 @@ table {
 .filtered-exit.filtered-exit-active {
     opacity: 0.01;
     transition: opacity 300ms ease-in;
+}
+
+.toggleButton {
+    position: relative;
+    top: -143px;
+    width: 30px;
+    height: 15px;
+    background: gray;
+    border-radius: 30px;
+    padding: 2px;
+    margin: 4px;
+    transition: all 200ms ease-in-out;
+}
+.toggleButton.active {
+    background: green;
+}
+.toggleButton > .inner-Circle {
+    position: relative;
+    width: 15px;
+    height: 15px;
+    background: #fff;
+    border-radius: 50%;
+    transition: all 200ms ease-in-out;
+}
+.toggleButton.active > .inner-Circle {
+    margin-left: 15px;
+}
+.toggleButton-text {
+    position: relative;
+    top: -130px;
+    left: 55px;
+    width: 100px;
+    cursor: pointer;
+    margin: -10px;
+    transition: color opacity .3s;
+}
+.toggleButton-text:hover {
+    color: rgba(15, 184, 0, 0.815);
+}
+.food-table {
+    position: relative;
+}
+.table-header {
+    cursor: pointer;
+    border-collapse: separate;
 }

@@ -13,7 +13,7 @@ const db = mongoose.model("foodpicker", {
     foodamount: Number,
     time: Number,
     timeseaten: Number,
-    lasteaten: Date
+    lasteaten: Array
 })
 /*
 db.find({}).then(food => {
@@ -22,21 +22,25 @@ db.find({}).then(food => {
         if (f.name === "testitesti")
             target = f
     })
-    target.lasteaten = new Date().toDateString()
+    const day = 24*60*60*1000
+    const toDay = new Date()
+    const startDay = Date.parse(toDay.toDateString()) - 1*day
+    const endDay = Date.parse(new Date(startDay).toDateString()) + 2*day
+    target.lasteaten = [new Date(startDay).toDateString(), new Date(endDay).toDateString()]
     target.timeseaten = 0
     console.log(target)
-    db.findOneAndUpdate({name: "testitesti"}, target, {upsert:true},
+    db.findOneAndUpdate({name: "testitesti"}, target, {upsert:true, useFindAndModify: false},
             function(err, doc){
                 if (err) console.log("error: " + err)
                 else console.log("succes!")
             })
 })
-*/
-/*
+
 db.find({_id: "5cf97ca61c9d440000889f91"}).then(food => {
     food.forEach(f => {
-        console.log(f)
+        console.log(f.lasteaten)
     })
-})*/
+})
+*/
 
 module.exports = db

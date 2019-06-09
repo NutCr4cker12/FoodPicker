@@ -2,7 +2,6 @@ import React from 'react';
 import axios from 'axios';
 import "./index.css";
 import { isNumber } from 'util';
-
 import { TransitionGroup } from 'react-transition-group';
 import { CSSTransition } from 'react-transition-group';
 
@@ -11,6 +10,8 @@ import { CSSTransition } from 'react-transition-group';
 
 import cow from "./images/liha2.png"
 import cow_x from "./images/liha_x.png"
+
+const func = require("./MyFuncs")
 
 //const URL = "http://localhost:3001/api/foods"
 const URL = "/api/foods"
@@ -34,6 +35,7 @@ class App extends React.Component {
         super(props)
         this.state = {
             foods: [],
+            newFoodAmount: 1,
             latestfoods: [],
             filtersPressed: [],
             maintypefilter: {on: [], off: MAINTYPEFILTERS},
@@ -41,7 +43,22 @@ class App extends React.Component {
             speedtypefilter: {on: [], off: SPEEDTYPEFILTERS},
             daytypefilter: {on: [], off: DAYTYPEFILTER},
             textfilter: "",
-            dropdownpressed: false
+            dropdown: "",
+            show_timeseaten: false,
+            show_duration: false,
+            show_lasteaten: false,
+            selectingFood: {
+                bool: false,
+                newFood: null
+            },
+            sortBy: [
+                {name: "main", clicked: 0, order: 0},
+                {name: "side", clicked: 0, order: 0},
+                {name: "name", clicked: 0, order: 0},
+                {name: "eaten", clicked: 0, order: 0},
+                {name: "duration", clicked: 0, order: 0},
+                {name: "lasteaten", clicked: 0, order: 0}
+            ]
         }
     }
 
@@ -135,32 +152,13 @@ class App extends React.Component {
         )
     }
 
-    FilterAvailable = () => {
-        const CreateRow = (name, arr) => {
-            const FillRow = (arr) => (
+    CreateRow = (name, arr) => {
+        return (
                 arr.map((type, i) =>
                     <CSSTransition key={i} classNames="filtered" timeout={{ enter: 500, exit: 300}}>
                         <button onClick={this.ActivateFilter.bind(this, type)} key={i}>{type}</button>
                     </CSSTransition>
                     )
-            )
-            return (
-                arr.length !== 0 ?
-                    <table><tbody><tr><td className="filter_available">{name}</td><td>{FillRow(arr)}</td></tr></tbody></table>
-                : null
-            )
-        }
-        return (
-                <div>
-                    <form>
-                        <input value={this.state.textfilter}
-                            onChange={this.updateTextFilter}/>
-                    </form>
-                    {CreateRow("main", this.state.maintypefilter.off)}
-                    {CreateRow("side", this.state.sidetypefilter.off)}
-                    {CreateRow("speed", this.state.speedtypefilter.off)}
-                    {CreateRow("days", this.state.daytypefilter.off)}
-                </div>
         )
     }
 
@@ -171,42 +169,27 @@ class App extends React.Component {
             <td><a href={food.link}>{food.name}</a></td>
         )
     }
-
-    SelectFood = (food) => {
+    /**
+     * Params:
+     *
+     * food = map   -   selected food
+     *
+     * eatStart = int   -   +/- days from today it started to be eaten
+     *
+     * eatEnd = int     -   How many days it is eaten
+     */
+    SelectFood = (food, eatStart, eatEnd) => {
         console.log("syodaan nakojaan " + food.name)
         console.log(food.id)
-        axios.post(URL + "/select", food).then(response => {
+        const day = 24*60*60*1000
+        const toDay = new Date()
+        const startDay = Date.parse(toDay.toDateString() + eatStart*day)
+        const endDay = Date.parse(new Date(startDay).toDateString() + eatEnd*day)
+        food.lasteaten = [new Date(startDay).toDateString(), new Date(endDay).toDateString()]
+        axios.post(URL + "/select/", food).then(response => {
             console.log("updated: " + response.data)
             this.componentDidMount()
         })
-    }
-
-    slowestFood() {
-        let slowest = 600
-        let arr = this.state.speedtypefilter.on
-        for (let i = 0; i < arr.length; i++) {
-            if (arr[i] === "<1/2h") {
-                slowest = 30
-            } else if (arr[i] === "<1h") {
-                slowest = 60
-            }
-        }
-        return slowest
-    }
-
-    /** params:
-     *
-     * searcharray = [array], array to search from
-     *
-     * filterarray = [array], array to match an element from
-     */
-    arrayElementInArray = (searcharray, filterarray) => {
-        for (let i = 0; i < searcharray.length; i++) {
-            for (let j = 0; j < filterarray.length; j++) {
-                if (searcharray[i] === filterarray[j]) return true
-            }
-        }
-        return false
     }
 
     FilteredFoods() {
@@ -224,77 +207,179 @@ class App extends React.Component {
             this.state.daytypefilter.on
         const arr = this.state.foods.filter(food =>
                 mainfilter.indexOf(food.maintype) !== -1 &&
-                this.arrayElementInArray(food.sidetype.split(", "), sidefilter) &&
+                func.arrayElementInArray(food.sidetype.split(", "), sidefilter) &&
                 dayfilter.indexOf(food.foodamount) !== -1 &&
-                food.time < this.slowestFood() &&
+                food.time < func.slowestFood(this.state.speedtypefilter.on) &&
                 food.name.toLowerCase().includes(this.state.textfilter.toLowerCase())
             )
         return arr
     }
 
     FoodTable = ({foods}) => {
+        const handleClick = (food) => {
+            this.setState({
+                selectingFood: {bool: true, newFood: food}
+            })
+        }
         return (
-        foods.map((food, i) =>
-            <tr key={i}>
-            <td className="maintype_table">{food.maintype === "liha" ?
-                    <img src={cow} alt="cow" height="20" width="20"></img>: food.maintype}</td>
-            <td className="sidetype_table">{food.sidetype}</td>
-            <this.NameLink food={food} />
-            <td>{food.timeseaten}</td>
-            <td>{food.foodamount}</td>
-            <td onClick={this.SelectFood.bind(this, food)}>
-                <img src="https://cdn.pixabay.com/photo/2016/03/09/07/08/web-1245502_960_720.png" alt="select" height="20" width="20"></img>
-            </td>
-            </tr>
-        ))
+            foods.map((food, i) =>
+                <tr key={i}>
+                <td className="maintype_table">{food.maintype === "liha" ?
+                        <img src={cow} alt="cow" height="20" width="20"></img>: food.maintype}</td>
+                <td className="sidetype_table">{food.sidetype}</td>
+                <this.NameLink food={food} />
+                {this.state.show_timeseaten ? <td>{food.timeseaten}</td> : null}
+                {this.state.show_duration ? <td>{food.foodamount}</td> : null}
+                {this.state.show_lasteaten ? <td>{func.lastEaten(food.lasteaten)}</td> : null}
+                <td onClick={handleClick.bind(this, food)}>
+                    <img src="https://cdn.pixabay.com/photo/2016/03/09/07/08/web-1245502_960_720.png" alt="select" height="20" width="20"></img>
+                </td>
+                </tr>
+            )
+        )
     }
 
     updateTextFilter = (event) => {
         this.setState({textfilter: event.target.value})
     }
 
-    dropDownClick() {
-        console.log("dropwdown pressed")
-        const wrapper = document.getElementById("filtermenu");
-        wrapper.classList.toggle("is-nav-open")
+    DropDown(id_name) {
+        document.getElementById(id_name).classList.toggle("is-nav-open")
         this.setState({
-            dropdownpressed: !this.state.dropdownpressed
+            dropdown: this.state.dropdown.length === 0 ? id_name : ""
         })
     }
 
+    showFilter(name) {
+        document.getElementById(name).classList.toggle("active")
+        document.getElementById("toggleButton-text").classList.toggle("pressed")
+        name === "Times Eaten" ?
+            this.setState({
+            show_timeseaten: !this.state.show_timeseaten
+        }) : name === "Duration" ? this.setState({
+            show_duration: !this.state.show_duration
+        }) : this.setState({
+            show_lasteaten: !this.state.show_lasteaten
+        })
+    }
+
+    ToggleButton = ({name}) => {
+        return (
+            <div>
+                <p
+                        id="toggleButton-text"
+                        className="toggleButton-text"
+                        onClick={this.showFilter.bind(this, name)}>
+                            {name}
+                    </p>
+            <div id={name} className="toggleButton">
+                <div className="inner-Circle">
+                </div>
+            </div>
+            </div>
+        )
+    }
+
+    MenuItem = ({name, dropName}) => {
+        return (
+            <i
+                className="menu-text"
+                onClick={() => {document.getElementById("filtermenu").classList.toggle("is-nav-open")
+                    this.setState({
+                        dropdown: this.state.dropdown.length === 0 ? dropName : "" })}}>
+                    {name}
+            </i>
+        )
+    }
+
+    handleSorterClick(sort) {
+        let newSortBy = this.state.sortBy
+        for (let i = 0; i < newSortBy.length; i++) {
+            newSortBy[i] = newSortBy[i].name === sort ?
+                {
+                    name: sort,
+                    clicked: newSortBy[i].order === 2 ? 0 : Date.parse(new Date().toDateString()),
+                    order: (newSortBy[i].order + 1) % 3
+                }
+                : newSortBy[i]
+        }
+        console.log(newSortBy)
+        this.setState({
+            foods: func.sortFoods(this.state.foods, newSortBy),
+            sortBy: newSortBy
+        })
+    }
+
+    TableHeader = ({name}) => {
+        let state = undefined
+        this.state.sortBy.forEach(sort => {
+            if (sort.name === name) state = sort
+        })
+        return (
+            <th>
+                <i className="table-header"
+                    onClick={this.handleSorterClick.bind(this, name)}>
+                    {name === "lasteaten" ? "Last Eaten" : name}{state.order === 1 ? " v" : state.order === 2 ? " ^" : ""}
+                </i>
+            </th>
+        )
+    }
+
+    // onClick={this.SelectFood.bind(this, food)}
     render() {
         const filtersSelected = this.FilterSelected()
-        const filtersAvailable = this.FilterAvailable()
+        const mainFilterRow = this.CreateRow("main", this.state.maintypefilter.off)
+        const sideFilterRow = this.CreateRow("side", this.state.sidetypefilter.off)
+        const speedFilterRow = this.CreateRow("speed", this.state.speedtypefilter.off)
+        const dayFilterRow = this.CreateRow("days", this.state.daytypefilter.off)
 
         return (
             <div>
+                <this.MenuItem name={"Filters"} dropName={"filtermenu"} />
+                <this.MenuItem name={"Show"} dropName={"showmenu"}/>
                 <div id="filtermenu" className="filtermenu">
                     <div className="nav">
-                        <i
-                            className="nav__icon"
-                            type="menu-fold"
-                            onClick={this.dropDownClick.bind(this)}>
-                                Filters</i>
                         <div>
-                            {this.state.dropdownpressed ?
-                                <TransitionGroup>{filtersAvailable}</TransitionGroup> : null}
+                        {this.state.dropdown === "filtermenu" ? <div>
+                            <form>
+                                <input value={this.state.textfilter}
+                                    onChange={this.updateTextFilter}/>
+                        </form></div> : null}
+                        {this.state.dropdown === "filtermenu" ? <div>
+                            <TransitionGroup>{mainFilterRow}</TransitionGroup>
+                        </div> : null}
+                        {this.state.dropdown === "filtermenu" ? <div>
+                            <TransitionGroup>{sideFilterRow}</TransitionGroup>
+                        </div> : null}
+                        {this.state.dropdown === "filtermenu" ? <div>
+                            <TransitionGroup>{speedFilterRow}</TransitionGroup>
+                        </div> : null}
+                        {this.state.dropdown === "filtermenu" ? <div>
+                            <TransitionGroup>{dayFilterRow}</TransitionGroup>
+                        </div> : null}
                         </div>
                     </div>
                 </div>
+                {this.state.dropdown === "showmenu" ? <div>
+                    <this.ToggleButton name={"Times Eaten"} />
+                    <this.ToggleButton name={"Duration"} />
+                    <this.ToggleButton name={"Last Eaten"} />
+                </div> : null}
                 <div>
                     <TransitionGroup>
                         {filtersSelected}
                     </TransitionGroup>
                 </div>
                 <div>
-                    <table>
+                    <table className="food-table">
                         <tbody>
                             <tr>
-                                <th>main</th>
-                                <th>side</th>
-                                <th>name</th>
-                                <th>eaten</th>
-                                <th>days</th>
+                                <this.TableHeader name={"main"} />
+                                <this.TableHeader name={"side"} />
+                                <this.TableHeader name={"name"} />
+                                {this.state.show_timeseaten ? <this.TableHeader name={"eaten"}/> : null}
+                                {this.state.show_duration ? <this.TableHeader name={"duration"}/> : null}
+                                {this.state.show_lasteaten ? <this.TableHeader name={"lasteaten"}/> : null}
                             </tr>
                             <this.FoodTable foods={this.FilteredFoods()} />
                         </tbody>
