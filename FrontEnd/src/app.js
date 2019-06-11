@@ -5,8 +5,9 @@ import { isNumber } from 'util';
 import { TransitionGroup } from 'react-transition-group';
 import { CSSTransition } from 'react-transition-group';
 
-// import { faHome } from "@fortawesome/free-solid-svg-icons";
-// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faHourglass, faHourglassEnd } from "@fortawesome/free-solid-svg-icons";
+import { faHourglass as faHourglassRegular} from "@fortawesome/free-regular-svg-icons"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import cow from "./images/liha2.png"
 import cow_x from "./images/liha_x.png"
@@ -27,6 +28,14 @@ const getFilterType = (type) => {
         SIDETYPEFILTERS.indexOf(type) !== -1 ? "side" :
         isNumber(type) ? "day" :
         "speed"
+    )
+}
+
+function Filters(type) {
+    return (
+        type === "<1/2h" ? <FontAwesomeIcon icon={faHourglassRegular}/> :
+        type === "<1h" ? <FontAwesomeIcon icon={faHourglassEnd}/> :
+        type === ">1h" ? <FontAwesomeIcon icon={faHourglass}/> : type
     )
 }
 
@@ -156,10 +165,16 @@ class App extends React.Component {
         return (
                 arr.map((type, i) =>
                     <CSSTransition key={i} classNames="filtered" timeout={{ enter: 500, exit: 300}}>
-                        <button onClick={this.ActivateFilter.bind(this, type)} key={i}>{type}</button>
+                        <button onClick={this.ActivateFilter.bind(this, type)} key={i}>{Filters(type)}</button>
                     </CSSTransition>
                     )
         )
+    }
+
+    CreateRow2 = (name, arr) => {
+        return this.state.dropName === "filtermenu" ?
+            <div><TransitionGroup>{this.CreateRow(name, arr)}</TransitionGroup></div>
+            : null
     }
 
     NameLink = ({food}) => {
@@ -250,26 +265,26 @@ class App extends React.Component {
         })
     }
 
-    showFilter(name) {
-        document.getElementById(name).classList.toggle("active")
-        document.getElementById("toggleButton-text").classList.toggle("pressed")
-        name === "Times Eaten" ?
-            this.setState({
-            show_timeseaten: !this.state.show_timeseaten
-        }) : name === "Duration" ? this.setState({
-            show_duration: !this.state.show_duration
-        }) : this.setState({
-            show_lasteaten: !this.state.show_lasteaten
-        })
-    }
-
     ToggleButton = ({name}) => {
+        function showFilter(name) {
+            document.getElementById(name).classList.toggle("active")
+            document.getElementById("toggleButton-text").classList.toggle("pressed")
+            document.getElementById("showmenu").classList.toggle("is-open")
+            name === "Times Eaten" ?
+                this.setState({
+                show_timeseaten: !this.state.show_timeseaten
+            }) : name === "Duration" ? this.setState({
+                show_duration: !this.state.show_duration
+            }) : this.setState({
+                show_lasteaten: !this.state.show_lasteaten
+            })
+        }
         return (
             <div>
                 <p
                         id="toggleButton-text"
                         className="toggleButton-text"
-                        onClick={this.showFilter.bind(this, name)}>
+                        onClick={showFilter.bind(this, name)}>
                             {name}
                     </p>
             <div id={name} className="toggleButton">
@@ -333,6 +348,7 @@ class App extends React.Component {
         const speedFilterRow = this.CreateRow("speed", this.state.speedtypefilter.off)
         const dayFilterRow = this.CreateRow("days", this.state.daytypefilter.off)
 
+        // <FontAwesomeIcon icon={faIgloo}/>
         return (
             <div>
                 <this.MenuItem name={"Filters"} dropName={"filtermenu"} />
@@ -345,8 +361,9 @@ class App extends React.Component {
                                 <input value={this.state.textfilter}
                                     onChange={this.updateTextFilter}/>
                         </form></div> : null}
+                        {/*<this.CreateRow2 name={"main"} arr={this.state.maintypefilter.off}/>*/}
                         {this.state.dropdown === "filtermenu" ? <div>
-                            <TransitionGroup>{mainFilterRow}</TransitionGroup>
+                            {<TransitionGroup>{mainFilterRow}</TransitionGroup>}
                         </div> : null}
                         {this.state.dropdown === "filtermenu" ? <div>
                             <TransitionGroup>{sideFilterRow}</TransitionGroup>
@@ -360,9 +377,10 @@ class App extends React.Component {
                         </div>
                     </div>
                 </div>
-                {this.state.dropdown === "showmenu" ? <div>
+                {this.state.dropdown === "showmenu" ? <div id="showmenu" className="showmenu">
                     <this.ToggleButton name={"Times Eaten"} />
                     <this.ToggleButton name={"Duration"} />
+                    <this.ToggleButton name={"Last Eaten"} />
                     <this.ToggleButton name={"Last Eaten"} />
                 </div> : null}
                 <div>

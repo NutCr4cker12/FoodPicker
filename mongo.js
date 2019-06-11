@@ -1,6 +1,7 @@
 const mongoose = require("mongoose")
 
-const url = process.env.MONGODB_URL
+// const url = process.env.MONGODB_URL
+const url = "mongodb+srv://paakayttaja:cg6TwxkhLLijoP@fstrainmongodb-3ve2c.mongodb.net/foodpickerdb"
 
 mongoose.connect(url)
 mongoose.Promise = global.Promise
