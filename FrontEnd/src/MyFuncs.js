@@ -22,12 +22,51 @@ function slowestFood(arr) {
             slowest = 30
         } else if (arr[i] === "<1h") {
             slowest = 60
+        } else if (arr[i] === ">1h") {
+            return -1
         }
     }
     return slowest
 }
 
+/**
+ *
+ * @param {int} foodtime : preparing time for the food
+ * @param {array} filterArray : array of time filters
+ */
+function checkSpeedFilter(foodtime, filterArray) {
+    if (!filterArray) return true
+    const slowest = slowestFood(filterArray)
+    if (slowest < 0) {
+        if (foodtime > 60) return true
+        return false
+    } else if (slowest === 30) {
+        if (foodtime <= 30) return true
+        return false
+    }
+    if (foodtime <= 60) return true
+    return false
+
+}
+
+
+/**
+ *
+ * @param {array} dayarray : array constinging of start and end days of the food
+ *
+ * Return {map} :
+ *      BigInt : daysMin (in milliseconds)
+ *      Int : daysMinInt (in days, +- from today)
+ *      BigInt : daysMax  (in milliseconds)
+ *      Int : daysMaxInt (in days, +- from today)
+ */
 function parseDates(dayarray) {
+    if (!dayarray) return {
+        "daysMin": 0,
+        "daysMinInt": 0,
+        "daysMax": 0,
+        "daysMaxInt": 0
+    }
     const today = Date.parse(new Date().toDateString())
     const startEating = Date.parse(new Date(dayarray[0]).toDateString())
     const lastAte = Date.parse(new Date(dayarray[1]).toDateString())
@@ -56,6 +95,12 @@ function lastEaten(dayarray) {
     return Math.round(daysMax) + " days ago"
 }
 
+/**
+ *
+ * @param {array} foods : array of food objects
+ *
+ * @returns {int} Next available free day in toDateString() format
+ */
 function nextAvailableFreeDay(foods) {
     const latestFood = getLatestFood(foods)
     return parseDates(latestFood.lasteaten).daysMax - 1
@@ -115,18 +160,57 @@ function sortFoods(foods, sortBy) {
                 return nameSort(a.name.toLowerCase(), b.name.toLowerCase(), sort.order)
             })
         } else if (sort.name === "eaten") {
-            newFoods = foods.sort((a, b) => {return a.timeseaten - b.timeseaten})
+            newFoods = foods.sort((a, b) => {
+                return nameSort(a.timeseaten, b.timeseaten, sort.order)
+            })
         } else if (sort.name === "duration") {
-            newFoods = foods.sort((a, b) => {return a.foodamount - b.foodamount})
+            newFoods = foods.sort((a, b) => {
+                return nameSort(a.foodamount, b.foodamount, sort.order)
+            })
         } else if (sort.name === "lasteaten") {
             newFoods = foods.sort((a, b) => {
                 let x = a.lasteaten ? Date.parse(a.lasteaten[1]) : Infinity
                 let y = b.lasteaten ? Date.parse(b.lasteaten[1]) : Infinity
-                return x - y})
+                return nameSort(x, y, sort.order)
+            })
         }
-        if (sort.order === 2) newFoods.reverse()
     })
     return newFoods
+}
+
+
+/**
+ *
+ * @param {array} foods : array of food objects
+ * @param {object} food : selected food
+ * @param {int} startDiff : days to vary startDay from default
+ * @param {int} endDiff : days to vary endDay from default
+ *
+ * @returns {Map} : {obj: food, start: String, end: String}
+ */
+function getStartAndEndDays(foods, food, startDiff, endDiff) {
+    let toDay_ms = Date.parse(new Date().toDateString())
+    let startDay_ms = toDay_ms + (nextAvailableFreeDay(foods)*-1 + startDiff)*oneDay
+    let endDay_ms = startDay_ms + endDiff*oneDay
+    let startDayString = new Date(startDay_ms).toDateString()
+    let endDayString = new Date(endDay_ms).toDateString()
+    console.log("today ms" + toDay_ms)
+    console.log("start ms" + startDay_ms)
+    console.log("endDay ms" + endDay_ms)
+    console.log("startDayString" + startDayString)
+    console.log("endDayString" + endDayString)
+    return {obj: food, start: startDayString, end: endDayString}
+}
+
+/**
+ *
+ * @param {String} date : starting date
+ * @param {int} shift : number of days to shift
+ *
+ * @returns {String} date : shifted Date
+ */
+function shiftDay(date, shift) {
+    return new Date(Date.parse(new Date(date)) + shift*oneDay).toDateString()
 }
 
 exports.arrayElementInArray = arrayElementInArray
@@ -136,3 +220,6 @@ exports.nextAvailableFreeDay = nextAvailableFreeDay
 exports.last3weeksFoods = last3weeksFoods
 exports.getLatestFood = getLatestFood
 exports.sortFoods = sortFoods
+exports.getStartAndEndDays = getStartAndEndDays
+exports.shiftDay = shiftDay
+exports.checkSpeedFilter = checkSpeedFilter

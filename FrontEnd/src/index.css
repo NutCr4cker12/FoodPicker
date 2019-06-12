@@ -1,3 +1,7 @@
+.main.set-to-background {
+    opacity: 0.25;
+}
+
 table {
     display: grid;
     grid-auto-flow: dense;
@@ -19,11 +23,17 @@ table {
 }
 
 .showmenu {
-    position: relative;
+    position: absolute;
+    display: flex;
     height: 0px;
+    opacity: 0.01;
+    margin-top: 100px;
+    transition: all 1000ms ease-in-out;
 }
-.showmenu.is-open {
-    opacity: 0.5;
+.showmenu.is-nav-open {
+    position: relative;
+    margin-top: 100px;
+    opacity: 1;
 }
 
 .nav {
@@ -61,7 +71,7 @@ table {
 
 .toggleButton {
     position: relative;
-    top: -143px;
+    top: -100px;
     width: 30px;
     height: 15px;
     background: gray;
@@ -86,7 +96,7 @@ table {
 }
 .toggleButton-text {
     position: relative;
-    top: -130px;
+    top: -87px;
     left: 55px;
     width: 100px;
     cursor: pointer;
@@ -99,7 +109,78 @@ table {
 .food-table {
     position: relative;
 }
+.food-table.set-to-background {
+    opacity: 0.25;
+}
 .table-header {
     cursor: pointer;
     border-collapse: separate;
+}
+.food-adder-content {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: 2fr, 1fr, 2fr, 1fr, 1fr, 2fr, 1fr, 2fr;
+    grid-auto-rows: 50px;
+}
+.fa-box {
+    font-weight: bold;
+    font-size: 20px;
+    text-align: center;
+    position: relative;
+}
+.fa-box:nth-child(1),
+.fa-box:nth-child(2),
+.fa-box:nth-child(8),
+.fa-box:nth-child(9),
+.fa-box:nth-child(15) {
+    grid-column: span 5;
+    text-align: center;
+    padding: 10px;
+}
+.fa-box:nth-child(8),
+.fa-box:nth-child(15) {
+    margin-top: -20px;
+    font-weight: normal;
+}
+.fa-box:nth-child(5),
+.fa-box:nth-child(12) {
+    font-size: 45px;
+    margin-top: -20px;
+    width: 130px;
+}
+.fa-box:nth-child(4),
+.fa-box:nth-child(11) {
+    margin-left: 20px;
+    width: 50px;
+}
+.fa-box:nth-child(4):hover,
+.fa-box:nth-child(11):hover {
+    color: rgba(148, 0, 0, 0.801)
+}
+.fa-box:nth-child(6),
+.fa-box:nth-child(13) {
+    margin-left: 0px;
+    width: 50px;
+}
+.fa-box:nth-child(6):hover,
+.fa-box:nth-child(13):hover {
+    color: yellowgreen;
+}
+
+.fa-box:nth-child(16),
+.fa-box:nth-child(18) {
+    grid-column: span 2;
+    border: 1px solid;
+    border-color: rgba(83, 83, 83, 0.466);
+    border-radius: 15px;
+    padding: 10px;
+    font-size: 25px;
+}
+.fa-box:nth-child(16) {
+    background: gray;
+    color: #fff;
+}
+.fa-box:nth-child(18) {
+    background: yellowgreen;
+    color: #fff;
 }

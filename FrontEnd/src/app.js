@@ -5,16 +5,18 @@ import { isNumber } from 'util';
 import { TransitionGroup } from 'react-transition-group';
 import { CSSTransition } from 'react-transition-group';
 
-import { faHourglass, faHourglassEnd } from "@fortawesome/free-solid-svg-icons";
-import { faHourglass as faHourglassRegular} from "@fortawesome/free-regular-svg-icons"
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+    faHourglass, faHourglassEnd,
+    faCartArrowDown,
+    faSort, faSortUp, faSortDown, faBars, faSlidersH
 
-import cow from "./images/liha2.png"
-import cow_x from "./images/liha_x.png"
+} from "@fortawesome/free-solid-svg-icons";
+import { faHourglass as faHourglassRegular, faCalendarMinus, faCalendarPlus} from "@fortawesome/free-regular-svg-icons"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const func = require("./MyFuncs")
 
-//const URL = "http://localhost:3001/api/foods"
+// const URL = "http://localhost:3001/api/foods"
 const URL = "/api/foods"
 
 const MAINTYPEFILTERS = ["liha", "kana", "kala", "kasvis"]
@@ -44,9 +46,16 @@ class App extends React.Component {
         super(props)
         this.state = {
             foods: [],
-            newFoodAmount: 1,
+            newFoodSelected: false,
+            newFood: {obj: null, start: 0, end: 1},
             latestfoods: [],
             filtersPressed: [],
+            filters: [
+                {name: "main", on: [], off: MAINTYPEFILTERS},
+                {name: "side", on: [], off: SIDETYPEFILTERS},
+                {name: "speed", on: [], off: SPEEDTYPEFILTERS},
+                {name: "day", on: [], off: DAYTYPEFILTER}
+            ],
             maintypefilter: {on: [], off: MAINTYPEFILTERS},
             sidetypefilter: {on: [], off: SIDETYPEFILTERS},
             speedtypefilter: {on: [], off: SPEEDTYPEFILTERS},
@@ -67,8 +76,9 @@ class App extends React.Component {
                 {name: "eaten", clicked: 0, order: 0},
                 {name: "duration", clicked: 0, order: 0},
                 {name: "lasteaten", clicked: 0, order: 0}
-            ]
+            ],
         }
+        this.SetFoodParameters = this.SetFoodParameters.bind(this)
     }
 
     componentDidMount() {
@@ -79,67 +89,38 @@ class App extends React.Component {
     }
 
     DeactivateFilter(type) {
+        let currentFilters = this.state.filters
+        for (let i = 0; i < currentFilters.length; i++) {
+            currentFilters[i] = currentFilters[i].name === getFilterType(type) ?
+                {
+                    name: currentFilters[i].name,
+                    on: currentFilters[i].on.filter(value => value !== type),
+                    off: currentFilters[i].off.concat(type)
+                }
+                : currentFilters[i]
+        }
         this.setState({
             filtersPressed: this.state.filtersPressed.filter(
                 value => value !== type
-            )
-        })
-        getFilterType(type)==="main" ?
-        this.setState({
-            maintypefilter : {on: this.state.maintypefilter.on.filter(
-                value => value !== type
             ),
-                off: this.state.maintypefilter.off.concat(type)}
-        }) : getFilterType(type)==="side" ?
-        this.setState({
-            sidetypefilter : {on: this.state.sidetypefilter.on.filter(
-                value => value !== type
-            ),
-                off: this.state.sidetypefilter.off.concat(type)}
-        }) : getFilterType(type)==="day" ?
-        this.setState({
-            daytypefilter : {on: this.state.daytypefilter.on.filter(
-                value => value !== type
-            ),
-                off: this.state.daytypefilter.off.concat(type)}
-        }) :
-        this.setState({
-            speedtypefilter : {on: this.state.speedtypefilter.on.filter(
-                value => value !== type
-            ),
-                off: this.state.speedtypefilter.off.concat(type)}
+            filters: currentFilters
         })
     }
 
     ActivateFilter(type) {
-        getFilterType(type)==="main" ?
+        let currentFilters = this.state.filters
+        for (let i = 0; i< currentFilters.length; i++) {
+            currentFilters[i] = currentFilters[i].name === getFilterType(type) ?
+                {
+                    name: currentFilters[i].name,
+                    on: currentFilters[i].on.concat(type),
+                    off: currentFilters[i].off.filter(value => value !== type)
+                }
+                : currentFilters[i]
+        }
         this.setState({
             filtersPressed: this.state.filtersPressed.concat(type),
-            maintypefilter: {on: this.state.maintypefilter.on.concat(type),
-                            off: this.state.maintypefilter.off.filter(
-                value => value !== type
-            )}
-        }) : getFilterType(type)==="side" ?
-        this.setState({
-            filtersPressed: this.state.filtersPressed.concat(type),
-            sidetypefilter: {on: this.state.sidetypefilter.on.concat(type),
-                off: this.state.sidetypefilter.off.filter(
-                value => value !== type
-            )}
-        }) : getFilterType(type)==="day" ?
-        this.setState({
-            filtersPressed: this.state.filtersPressed.concat(type),
-            daytypefilter: {on: this.state.daytypefilter.on.concat(type),
-                off: this.state.daytypefilter.off.filter(
-                value => value !== type
-            )}
-        }) :
-        this.setState({
-            filtersPressed: this.state.filtersPressed.concat(type),
-            speedtypefilter: {on: this.state.speedtypefilter.on.concat(type),
-                off: this.state.speedtypefilter.off.filter(
-                value => value !== type
-            )}
+            filters: currentFilters
         })
     }
 
@@ -152,10 +133,7 @@ class App extends React.Component {
                     timeout={{ enter: 500, exit: 300}}
                 >
                     <button onClick={this.DeactivateFilter.bind(this, type)}
-                        key={i}>{type==="liha" ? <img src={cow_x} alt="cow" height="20" width="38"></img> :
-                        type==="pasta" ? <img src="http://pngimg.com/uploads/pasta/pasta_PNG91.png"
-                            alt="pasta" height="20" width="20"></img> :
-                            type}</button>
+                        key={i}>{type}</button>
                 </CSSTransition>
             )
         )
@@ -193,61 +171,115 @@ class App extends React.Component {
      *
      * eatEnd = int     -   How many days it is eaten
      */
-    SelectFood = (food, eatStart, eatEnd) => {
-        console.log("syodaan nakojaan " + food.name)
-        console.log(food.id)
-        const day = 24*60*60*1000
-        const toDay = new Date()
-        const startDay = Date.parse(toDay.toDateString() + eatStart*day)
-        const endDay = Date.parse(new Date(startDay).toDateString() + eatEnd*day)
-        food.lasteaten = [new Date(startDay).toDateString(), new Date(endDay).toDateString()]
-        axios.post(URL + "/select/", food).then(response => {
+    SelectFood = () => {
+        let newFood = this.state.newFood.obj
+        console.log("syodaan nakojaan " + newFood.name)
+        const startDay = this.state.newFood.start
+        const endDay = this.state.newFood.end
+        newFood.lasteaten = [new Date(startDay).toDateString(), new Date(endDay).toDateString()]
+        console.log(newFood)
+        axios.post(URL + "/select/", newFood).then(response => {
             console.log("updated: " + response.data)
             this.componentDidMount()
         })
+        this.setState({
+            newFoodSelected: false,
+            dropdown: ""
+        })
+    }
+
+    SetFoodParameters = () => {
+        function handleClick(start, end) {
+            const origStart = this.state.newFood.start
+            const origEnd = this.state.newFood.end
+            if (origStart === origEnd && (start > 0 || end < 0)) return
+            const startDate = func.shiftDay(this.state.newFood.start, start)
+            const endDate = func.shiftDay(this.state.newFood.end, end)
+            this.setState({
+                newFood: {
+                    obj: this.state.newFood.obj,
+                    start: startDate,
+                    end: endDate
+                }
+            })
+            console.log(this.state.newFood)
+        }
+        function getShortDate(date) {
+            const month = new Date(date).getMonth()
+            return new Date(date).getDate() + "." + month
+        }
+        return (
+            <div className="food-adder-content">
+                <div className="fa-box" >{this.state.newFood.obj.name}</div>
+                <div className="fa-box" >Start</div>
+                    <i></i>
+                    <FontAwesomeIcon className="fa-box" icon={faCalendarMinus} onClick={handleClick.bind(this, -1, 0)}/>
+                    <div className="fa-box">{this.state.newFood.start.split(" ")[0]}</div>
+                    <FontAwesomeIcon className="fa-box" icon={faCalendarPlus} onClick={handleClick.bind(this, 1, 0)}/>
+                    <i></i>
+                <div className="fa-box">{getShortDate(this.state.newFood.start)}</div>
+
+                <div className="fa-box">End 2</div>
+                    <i></i>
+                    <FontAwesomeIcon className="fa-box" icon={faCalendarMinus} onClick={handleClick.bind(this, 0, -1)}/>
+                    <div className="fa-box">{this.state.newFood.end.split(" ")[0]}</div>
+                    <FontAwesomeIcon className="fa-box" icon={faCalendarPlus} onClick={handleClick.bind(this, 0, 1)}/>
+                    <i></i>
+                <div className="fa-box">{getShortDate(this.state.newFood.end)}</div>
+
+                <div className="fa-box"
+                    onClick={() => this.setState({
+                        newFoodSelected: false,
+                        dropdown: ""
+                        })}>
+                        Cancel</div><i></i>
+                <div className="fa-box"
+                    onClick={this.SelectFood.bind(this)}>
+                        Ok</div>
+            </div>
+        )
     }
 
     FilteredFoods() {
         if (this.state.filtersPressed.length === 0 &&
             this.state.textfilter.length === 0)
             return this.state.foods
-        let mainfilter = this.state.maintypefilter.on.length === 0 ?
-            this.state.maintypefilter.off :
-            this.state.maintypefilter.on
-        let sidefilter = this.state.sidetypefilter.on.length === 0 ?
-            this.state.sidetypefilter.off :
-            this.state.sidetypefilter.on
-        let dayfilter = this.state.daytypefilter.on.length === 0 ?
-            this.state.daytypefilter.off :
-            this.state.daytypefilter.on
+        let mainfilter = this.state.filters[0].on.length === 0 ?
+            this.state.filters[0].off :
+            this.state.filters[0].on
+        let sidefilter = this.state.filters[1].on.length === 0 ?
+            this.state.filters[1].off :
+            this.state.filters[1].on
+        let dayfilter = this.state.filters[3].on.length === 0 ?
+            this.state.filters[3].off :
+            this.state.filters[3].on
         const arr = this.state.foods.filter(food =>
                 mainfilter.indexOf(food.maintype) !== -1 &&
                 func.arrayElementInArray(food.sidetype.split(", "), sidefilter) &&
                 dayfilter.indexOf(food.foodamount) !== -1 &&
-                food.time < func.slowestFood(this.state.speedtypefilter.on) &&
+                func.checkSpeedFilter(food.time, this.state.filters[2].on) &&
                 food.name.toLowerCase().includes(this.state.textfilter.toLowerCase())
             )
         return arr
     }
 
     FoodTable = ({foods}) => {
-        const handleClick = (food) => {
-            this.setState({
-                selectingFood: {bool: true, newFood: food}
-            })
-        }
         return (
             foods.map((food, i) =>
                 <tr key={i}>
-                <td className="maintype_table">{food.maintype === "liha" ?
-                        <img src={cow} alt="cow" height="20" width="20"></img>: food.maintype}</td>
+                <td className="maintype_table">{food.maintype}</td>
                 <td className="sidetype_table">{food.sidetype}</td>
                 <this.NameLink food={food} />
                 {this.state.show_timeseaten ? <td>{food.timeseaten}</td> : null}
                 {this.state.show_duration ? <td>{food.foodamount}</td> : null}
                 {this.state.show_lasteaten ? <td>{func.lastEaten(food.lasteaten)}</td> : null}
-                <td onClick={handleClick.bind(this, food)}>
-                    <img src="https://cdn.pixabay.com/photo/2016/03/09/07/08/web-1245502_960_720.png" alt="select" height="20" width="20"></img>
+                <td onClick={() => {
+                    document.getElementById("food-table").classList.toggle("set-to-background")
+                    this.setState({
+                        newFoodSelected: true,
+                        newFood: func.getStartAndEndDays(this.state.foods, food, 0, food.foodamount)
+                    })}}>
+                    <FontAwesomeIcon icon={faCartArrowDown} />
                 </td>
                 </tr>
             )
@@ -269,7 +301,6 @@ class App extends React.Component {
         function showFilter(name) {
             document.getElementById(name).classList.toggle("active")
             document.getElementById("toggleButton-text").classList.toggle("pressed")
-            document.getElementById("showmenu").classList.toggle("is-open")
             name === "Times Eaten" ?
                 this.setState({
                 show_timeseaten: !this.state.show_timeseaten
@@ -295,14 +326,23 @@ class App extends React.Component {
         )
     }
 
-    MenuItem = ({name, dropName}) => {
+    MenuItem = ({name, dropName, icon}) => {
+        function handeClick() {
+            console.log(dropName)
+            let prevName = this.state.dropdown
+            console.log(prevName)
+            document.getElementById(dropName).classList.toggle("is-nav-open")
+            this.setState({
+                dropdown: prevName === dropName ? "" : dropName
+            })
+            if (prevName !== dropName && prevName.length > 0)
+                document.getElementById(prevName).classList.toggle("is-nav-open")
+        }
         return (
             <i
                 className="menu-text"
-                onClick={() => {document.getElementById("filtermenu").classList.toggle("is-nav-open")
-                    this.setState({
-                        dropdown: this.state.dropdown.length === 0 ? dropName : "" })}}>
-                    {name}
+                onClick={handeClick.bind(this, handeClick)}>
+                    <FontAwesomeIcon icon={icon}/>{" " + name}
             </i>
         )
     }
@@ -334,7 +374,10 @@ class App extends React.Component {
             <th>
                 <i className="table-header"
                     onClick={this.handleSorterClick.bind(this, name)}>
-                    {name === "lasteaten" ? "Last Eaten" : name}{state.order === 1 ? " v" : state.order === 2 ? " ^" : ""}
+                    {name === "lasteaten" ? "Last Eaten" : name + " "}
+                    {state.order === 1 ? <FontAwesomeIcon icon={faSortDown}/>
+                    : state.order === 2 ? <FontAwesomeIcon icon={faSortUp}/>
+                                        : <FontAwesomeIcon icon={faSort}/>}
                 </i>
             </th>
         )
@@ -343,16 +386,17 @@ class App extends React.Component {
     // onClick={this.SelectFood.bind(this, food)}
     render() {
         const filtersSelected = this.FilterSelected()
-        const mainFilterRow = this.CreateRow("main", this.state.maintypefilter.off)
-        const sideFilterRow = this.CreateRow("side", this.state.sidetypefilter.off)
-        const speedFilterRow = this.CreateRow("speed", this.state.speedtypefilter.off)
-        const dayFilterRow = this.CreateRow("days", this.state.daytypefilter.off)
+        const mainFilterRow = this.CreateRow("main", this.state.filters[0].off)
+        const sideFilterRow = this.CreateRow("side", this.state.filters[1].off)
+        const speedFilterRow = this.CreateRow("speed", this.state.filters[2].off)
+        const dayFilterRow = this.CreateRow("days", this.state.filters[3].off)
 
-        // <FontAwesomeIcon icon={faIgloo}/>
         return (
             <div>
-                <this.MenuItem name={"Filters"} dropName={"filtermenu"} />
-                <this.MenuItem name={"Show"} dropName={"showmenu"}/>
+                {this.state.newFoodSelected ? <this.SetFoodParameters /> :
+            <div id="main">
+                <this.MenuItem name={"Filters"} dropName={"filtermenu"} icon={faBars} />
+                <this.MenuItem name={"Show"} dropName={"showmenu"} icon={faSlidersH}/>
                 <div id="filtermenu" className="filtermenu">
                     <div className="nav">
                         <div>
@@ -377,19 +421,21 @@ class App extends React.Component {
                         </div>
                     </div>
                 </div>
-                {this.state.dropdown === "showmenu" ? <div id="showmenu" className="showmenu">
-                    <this.ToggleButton name={"Times Eaten"} />
-                    <this.ToggleButton name={"Duration"} />
-                    <this.ToggleButton name={"Last Eaten"} />
-                    <this.ToggleButton name={"Last Eaten"} />
-                </div> : null}
+                <div id="showmenu" className="showmenu">
+                    {this.state.dropdown === "showmenu" ?
+                    <div>
+                        <this.ToggleButton name={"Times Eaten"} />
+                        <this.ToggleButton name={"Duration"} />
+                        <this.ToggleButton name={"Last Eaten"} />
+                    </div>
+                : null} </div>
                 <div>
                     <TransitionGroup>
                         {filtersSelected}
                     </TransitionGroup>
                 </div>
                 <div>
-                    <table className="food-table">
+                    <table id="food-table" className="food-table">
                         <tbody>
                             <tr>
                                 <this.TableHeader name={"main"} />
@@ -403,6 +449,7 @@ class App extends React.Component {
                         </tbody>
                     </table>
                 </div>
+            </div>}
             </div>
         )
     }
