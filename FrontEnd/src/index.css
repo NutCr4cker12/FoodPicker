@@ -1,3 +1,7 @@
+#main {
+    font-family: Arial;
+}
+
 .main.set-to-background {
     opacity: 0.25;
 }
@@ -10,6 +14,7 @@ table {
 .filtermenu {
     position: relative;
     display: flex;
+    visibility: hidden;
     width: 100%;
     height: 10px;
     margin: 0 0 0 -20px;
@@ -17,22 +22,34 @@ table {
     transition: all 250ms ease-in-out;
 }
 .filtermenu.is-nav-open {
-    position: relative;
-    height: 150px;
+    visibility: visible;
+    height: 250px;
     opacity: 1;
 }
 
+.form {
+    display: inline;
+}
+.form:nth-child(2) {
+    position: relative;
+    padding: 10px;
+    font-size: 20px;
+
+}
+
 .showmenu {
-    position: absolute;
+    position: relative;
     display: flex;
-    height: 0px;
+    height: 10px;
+    visibility: hidden;
+    border: 1px solid;
     opacity: 0.01;
-    margin-top: 100px;
-    transition: all 1000ms ease-in-out;
+    transition: all 250ms ease-in-out;
 }
 .showmenu.is-nav-open {
-    position: relative;
-    margin-top: 100px;
+    visibility: visible;
+    margin-top: 10px;
+    height: 100px;
     opacity: 1;
 }
 
@@ -46,12 +63,27 @@ table {
 .menu-text {
     position: relative;
     padding: 10px;
+    font-size: 20px;
     cursor: pointer;
     transition: color .3s;
 }
 
 .menu-text:hover {
     color: rgba(15, 184, 0, 0.815);
+}
+
+.filter-button {
+    margin: 2px;
+    margin-top: 5px;
+    background:linear-gradient(to bottom, #77d42a 5%, #5cb811 100%);
+    background-color:#77d42a;
+    border-radius: 5px;
+    border:1px solid #268a16;
+    font-family: Arial;
+    font-size: 17px;
+    font-weight: bold;
+    text-shadow:0px 1px 0px #aade7c;
+    transition: font-size 300ms;
 }
 
 .filtered-enter {
@@ -71,9 +103,9 @@ table {
 
 .toggleButton {
     position: relative;
-    top: -100px;
-    width: 30px;
-    height: 15px;
+    top: 5px;
+    width: 40px;
+    height: 20px;
     background: gray;
     border-radius: 30px;
     padding: 2px;
@@ -85,23 +117,26 @@ table {
 }
 .toggleButton > .inner-Circle {
     position: relative;
-    width: 15px;
-    height: 15px;
+    width: 20px;
+    height: 20px;
     background: #fff;
     border-radius: 50%;
     transition: all 200ms ease-in-out;
 }
 .toggleButton.active > .inner-Circle {
-    margin-left: 15px;
+    margin-left: 20px;
 }
 .toggleButton-text {
     position: relative;
-    top: -87px;
-    left: 55px;
+    top: 22px;
+    left: 65px;
+    font-family: Arial;
+    font-weight: bold;
+    font-size: 15px;
     width: 100px;
     cursor: pointer;
     margin: -10px;
-    transition: color opacity .3s;
+    transition: color .5s;
 }
 .toggleButton-text:hover {
     color: rgba(15, 184, 0, 0.815);
@@ -183,4 +218,16 @@ table {
 .fa-box:nth-child(18) {
     background: yellowgreen;
     color: #fff;
+}
+
+.include-exclude {
+    position: relative;
+    padding: 20px;
+    font-size: 20px;
+    perspective: 1000px;
+    text-align: center;
+    transition: all 1s;
+}
+.include-exclude:active {
+    font-size: 15px;
 }

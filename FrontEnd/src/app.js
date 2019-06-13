@@ -8,7 +8,7 @@ import { CSSTransition } from 'react-transition-group';
 import {
     faHourglass, faHourglassEnd,
     faCartArrowDown,
-    faSort, faSortUp, faSortDown, faBars, faSlidersH
+    faSort, faSortUp, faSortDown, faBars, faSlidersH, faTimes, faThumbsUp, faThumbsDown
 
 } from "@fortawesome/free-solid-svg-icons";
 import { faHourglass as faHourglassRegular, faCalendarMinus, faCalendarPlus} from "@fortawesome/free-regular-svg-icons"
@@ -19,8 +19,8 @@ const func = require("./MyFuncs")
 // const URL = "http://localhost:3001/api/foods"
 const URL = "/api/foods"
 
-const MAINTYPEFILTERS = ["liha", "kana", "kala", "kasvis"]
-const SIDETYPEFILTERS = ["pasta", "peruna", "riisi", "salaatti", "bataatti"]
+const MAINTYPEFILTERS = ["kala", "kana", "kasvis", "liha"]
+const SIDETYPEFILTERS = ["bataatti", "pasta", "peruna", "riisi", "salaatti"]
 const SPEEDTYPEFILTERS = ["<1/2h","<1h", ">1h"]
 const DAYTYPEFILTER = [1, 2, 3]
 
@@ -56,10 +56,6 @@ class App extends React.Component {
                 {name: "speed", on: [], off: SPEEDTYPEFILTERS},
                 {name: "day", on: [], off: DAYTYPEFILTER}
             ],
-            maintypefilter: {on: [], off: MAINTYPEFILTERS},
-            sidetypefilter: {on: [], off: SIDETYPEFILTERS},
-            speedtypefilter: {on: [], off: SPEEDTYPEFILTERS},
-            daytypefilter: {on: [], off: DAYTYPEFILTER},
             textfilter: "",
             dropdown: "",
             show_timeseaten: false,
@@ -77,6 +73,7 @@ class App extends React.Component {
                 {name: "duration", clicked: 0, order: 0},
                 {name: "lasteaten", clicked: 0, order: 0}
             ],
+            filterIncludeExclude: true // true = include, false = exclude
         }
         this.SetFoodParameters = this.SetFoodParameters.bind(this)
     }
@@ -88,14 +85,14 @@ class App extends React.Component {
         })
     }
 
-    DeactivateFilter(type) {
+    DeactivateFilter(type, i) {
         let currentFilters = this.state.filters
         for (let i = 0; i < currentFilters.length; i++) {
             currentFilters[i] = currentFilters[i].name === getFilterType(type) ?
                 {
                     name: currentFilters[i].name,
                     on: currentFilters[i].on.filter(value => value !== type),
-                    off: currentFilters[i].off.concat(type)
+                    off: currentFilters[i].off.concat(type).sort()
                 }
                 : currentFilters[i]
         }
@@ -119,7 +116,7 @@ class App extends React.Component {
                 : currentFilters[i]
         }
         this.setState({
-            filtersPressed: this.state.filtersPressed.concat(type),
+            filtersPressed: this.state.filtersPressed.concat(type).sort(),
             filters: currentFilters
         })
     }
@@ -127,15 +124,21 @@ class App extends React.Component {
     FilterSelected = () => {
         return (
             this.state.filtersPressed.map((type, i) =>
-                <CSSTransition
-                    key={i}
-                    classNames="filtered"
-                    timeout={{ enter: 500, exit: 300}}
-                >
-                    <button onClick={this.DeactivateFilter.bind(this, type)}
+                <CSSTransition key={i} classNames="filtered" timeout={{ enter: 500, exit: 300}} >
+                    <button className="filter-button" onClick={this.DeactivateFilter.bind(this, type)}
                         key={i}>{type}</button>
                 </CSSTransition>
             )
+        )
+    }
+
+    FilterRow = (filterObject) => {
+        return (
+            <div>
+                <TransitionGroup>
+                    {this.CreateRow(filterObject.name, filterObject.off)}
+                </TransitionGroup>
+            </div>
         )
     }
 
@@ -143,16 +146,18 @@ class App extends React.Component {
         return (
                 arr.map((type, i) =>
                     <CSSTransition key={i} classNames="filtered" timeout={{ enter: 500, exit: 300}}>
-                        <button onClick={this.ActivateFilter.bind(this, type)} key={i}>{Filters(type)}</button>
+                        <button id={getFilterType(name)} className="filter-button" onClick={this.ActivateFilter.bind(this, type)} key={i}>{Filters(type)}</button>
                     </CSSTransition>
                     )
         )
     }
 
     CreateRow2 = (name, arr) => {
-        return this.state.dropName === "filtermenu" ?
-            <div><TransitionGroup>{this.CreateRow(name, arr)}</TransitionGroup></div>
-            : null
+        return (
+            arr.map((type, i) =>
+                    <button onClick={this.ActivateFilter.bind(this, type)} key={i}>{Filters(type)}</button>
+                )
+        )
     }
 
     NameLink = ({food}) => {
@@ -205,7 +210,7 @@ class App extends React.Component {
             console.log(this.state.newFood)
         }
         function getShortDate(date) {
-            const month = new Date(date).getMonth()
+            const month = new Date(date).getMonth() + 1
             return new Date(date).getDate() + "." + month
         }
         return (
@@ -328,9 +333,7 @@ class App extends React.Component {
 
     MenuItem = ({name, dropName, icon}) => {
         function handeClick() {
-            console.log(dropName)
             let prevName = this.state.dropdown
-            console.log(prevName)
             document.getElementById(dropName).classList.toggle("is-nav-open")
             this.setState({
                 dropdown: prevName === dropName ? "" : dropName
@@ -386,10 +389,10 @@ class App extends React.Component {
     // onClick={this.SelectFood.bind(this, food)}
     render() {
         const filtersSelected = this.FilterSelected()
-        const mainFilterRow = this.CreateRow("main", this.state.filters[0].off)
-        const sideFilterRow = this.CreateRow("side", this.state.filters[1].off)
-        const speedFilterRow = this.CreateRow("speed", this.state.filters[2].off)
-        const dayFilterRow = this.CreateRow("days", this.state.filters[3].off)
+        const mainFilterRow = this.FilterRow(this.state.filters[0])
+        const sideFilterRow = this.FilterRow(this.state.filters[1])
+        const speedFilterRow = this.FilterRow(this.state.filters[2])
+        const dayFilterRow = this.FilterRow(this.state.filters[3])
 
         return (
             <div>
@@ -400,24 +403,41 @@ class App extends React.Component {
                 <div id="filtermenu" className="filtermenu">
                     <div className="nav">
                         <div>
-                        {this.state.dropdown === "filtermenu" ? <div>
-                            <form>
-                                <input value={this.state.textfilter}
-                                    onChange={this.updateTextFilter}/>
-                        </form></div> : null}
-                        {/*<this.CreateRow2 name={"main"} arr={this.state.maintypefilter.off}/>*/}
-                        {this.state.dropdown === "filtermenu" ? <div>
-                            {<TransitionGroup>{mainFilterRow}</TransitionGroup>}
-                        </div> : null}
-                        {this.state.dropdown === "filtermenu" ? <div>
-                            <TransitionGroup>{sideFilterRow}</TransitionGroup>
-                        </div> : null}
-                        {this.state.dropdown === "filtermenu" ? <div>
-                            <TransitionGroup>{speedFilterRow}</TransitionGroup>
-                        </div> : null}
-                        {this.state.dropdown === "filtermenu" ? <div>
-                            <TransitionGroup>{dayFilterRow}</TransitionGroup>
-                        </div> : null}
+                        {this.state.dropdown === "filtermenu" ?
+                            <div>
+                                <div className="form">
+                                    <form className="form">
+                                        <input value={this.state.textfilter}
+                                            onChange={this.updateTextFilter}/>
+                                    </form>
+                                    <div className="form">
+                                        <FontAwesomeIcon icon={faTimes}
+                                                onClick={() => {
+                                                this.setState({
+                                                    textfilter: ""
+                                                })
+                                            }}/>
+                                    </div>
+                                </div>
+                                {mainFilterRow}
+                                {sideFilterRow}
+                                {speedFilterRow}
+                                {dayFilterRow}
+                                <div className="include-exclude" onClick={() => {
+                                    this.setState({
+                                        filterIncludeExclude: !this.state.filterIncludeExclude
+                                    })
+                                }}>
+                                    <div className="include-exclude-inner">
+                                        {this.state.filterIncludeExclude ?
+                                            <div className="include"><FontAwesomeIcon icon={faThumbsUp}
+                                            /><i>Must Include</i> </div>:
+                                            <div className="exclude"><FontAwesomeIcon icon={faThumbsDown}/><i>Exclude</i> </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        : null}
                         </div>
                     </div>
                 </div>
@@ -450,7 +470,7 @@ class App extends React.Component {
                     </table>
                 </div>
             </div>}
-            </div>
+        </div>
         )
     }
 }
