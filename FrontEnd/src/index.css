@@ -34,7 +34,6 @@ table {
     position: relative;
     padding: 10px;
     font-size: 20px;
-
 }
 
 .showmenu {
@@ -42,7 +41,6 @@ table {
     display: flex;
     height: 10px;
     visibility: hidden;
-    border: 1px solid;
     opacity: 0.01;
     transition: all 250ms ease-in-out;
 }
@@ -230,4 +228,8 @@ table {
 }
 .include-exclude:active {
     font-size: 15px;
+}
+.remove-filter {
+    position: relative;
+    margin-left: 5px;
 }

@@ -19,11 +19,11 @@ function slowestFood(arr) {
     let slowest = 600
     for (let i = 0; i < arr.length; i++) {
         if (arr[i] === "<1/2h") {
-            slowest = 30
+            return 30
         } else if (arr[i] === "<1h") {
             slowest = 60
-        } else if (arr[i] === ">1h") {
-            return -1
+        } else if (arr[i] === ">1h" && slowest > 100) {
+            slowest = 90
         }
     }
     return slowest
@@ -37,7 +37,7 @@ function slowestFood(arr) {
 function checkSpeedFilter(foodtime, filterArray) {
     if (!filterArray) return true
     const slowest = slowestFood(filterArray)
-    if (slowest < 0) {
+    if (slowest === 90) {
         if (foodtime > 60) return true
         return false
     } else if (slowest === 30) {
@@ -61,12 +61,13 @@ function checkSpeedFilter(foodtime, filterArray) {
  *      Int : daysMaxInt (in days, +- from today)
  */
 function parseDates(dayarray) {
-    if (!dayarray) return {
+    if (!dayarray) {console.log("incorrect dayArray")
+        return {
         "daysMin": 0,
         "daysMinInt": 0,
         "daysMax": 0,
         "daysMaxInt": 0
-    }
+    }}
     const today = Date.parse(new Date().toDateString())
     const startEating = Date.parse(new Date(dayarray[0]).toDateString())
     const lastAte = Date.parse(new Date(dayarray[1]).toDateString())
@@ -103,23 +104,34 @@ function lastEaten(dayarray) {
  */
 function nextAvailableFreeDay(foods) {
     const latestFood = getLatestFood(foods)
-    return parseDates(latestFood.lasteaten).daysMax - 1
+    if (parseDates(latestFood.lastEaten).daysMaxInt < Date.parse(new Date().toDateString()))
+        return 0
+    return parseDates(latestFood.lasteaten).daysMax
 }
 
 
 /**
  *
  * @param {array} foods
- * return {object in foods (= "food")} lates eaten Food
+ * return {object in foods (= "food")} latest eaten Food
  */
 function getLatestFood(foods) {
     let latesFood = foods[0]
-    let biggestDate = Date.parse(new Date(0).toDateString())
+    /*let biggestDate = Date.parse(new Date(0).toDateString())
     foods.forEach(food => {
         if (food.lasteaten && parseDates(food.lasteaten).daysMaxInt > biggestDate)
             biggestDate = parseDates(food.lasteaten).daysMaxInt
             latesFood = food
     })
+    console.log(latesFood)
+    return latesFood*/
+    let biggestDate = -1
+    foods.forEach(food => {
+        let le = lastEaten(food.lastEaten)
+        if (le === "Current" && biggestDate < 0) latesFood = food
+        if (le.indexOf("days") !== -1 && biggestDate < Number(le.split(" ")[1])) latesFood = food
+    })
+    console.log(latesFood)
     return latesFood
 }
 

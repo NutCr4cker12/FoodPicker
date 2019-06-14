@@ -8,7 +8,7 @@ import { CSSTransition } from 'react-transition-group';
 import {
     faHourglass, faHourglassEnd,
     faCartArrowDown,
-    faSort, faSortUp, faSortDown, faBars, faSlidersH, faTimes, faThumbsUp, faThumbsDown
+    faSort, faSortUp, faSortDown, faBars, faSlidersH, faTimes, faCheck, faFish, faDrumstickBite, faKiwiBird, faSeedling
 
 } from "@fortawesome/free-solid-svg-icons";
 import { faHourglass as faHourglassRegular, faCalendarMinus, faCalendarPlus} from "@fortawesome/free-regular-svg-icons"
@@ -16,7 +16,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const func = require("./MyFuncs")
 
-// const URL = "http://localhost:3001/api/foods"
+//const URL = "http://localhost:3001/api/foods"
 const URL = "/api/foods"
 
 const MAINTYPEFILTERS = ["kala", "kana", "kasvis", "liha"]
@@ -35,9 +35,15 @@ const getFilterType = (type) => {
 
 function Filters(type) {
     return (
+        type === "liha" ? <FontAwesomeIcon icon={faDrumstickBite} /> :
+        type === "kana" ? <FontAwesomeIcon icon={faKiwiBird}/> :
+        type === "kasvis" ? <FontAwesomeIcon icon={faSeedling} /> :
+        type === "kala" ? <FontAwesomeIcon icon={faFish}/> :
+
         type === "<1/2h" ? <FontAwesomeIcon icon={faHourglassRegular}/> :
         type === "<1h" ? <FontAwesomeIcon icon={faHourglassEnd}/> :
-        type === ">1h" ? <FontAwesomeIcon icon={faHourglass}/> : type
+        type === ">1h" ? <FontAwesomeIcon icon={faHourglass}/> :
+         type
     )
 }
 
@@ -51,10 +57,10 @@ class App extends React.Component {
             latestfoods: [],
             filtersPressed: [],
             filters: [
-                {name: "main", on: [], off: MAINTYPEFILTERS},
-                {name: "side", on: [], off: SIDETYPEFILTERS},
-                {name: "speed", on: [], off: SPEEDTYPEFILTERS},
-                {name: "day", on: [], off: DAYTYPEFILTER}
+                {name: "main", on: {include: [], exclude: []}, off: MAINTYPEFILTERS},
+                {name: "side", on: {include: [], exclude: []}, off: SIDETYPEFILTERS},
+                {name: "speed", on: {include: [], exclude: []}, off: SPEEDTYPEFILTERS},
+                {name: "day", on: {include: [], exclude: []}, off: DAYTYPEFILTER}
             ],
             textfilter: "",
             dropdown: "",
@@ -91,7 +97,10 @@ class App extends React.Component {
             currentFilters[i] = currentFilters[i].name === getFilterType(type) ?
                 {
                     name: currentFilters[i].name,
-                    on: currentFilters[i].on.filter(value => value !== type),
+                    on: {
+                        include: currentFilters[i].on.include.filter(value => value !== type),
+                        exclude: currentFilters[i].on.exclude.filter(value => value !== type)
+                    },
                     off: currentFilters[i].off.concat(type).sort()
                 }
                 : currentFilters[i]
@@ -110,7 +119,14 @@ class App extends React.Component {
             currentFilters[i] = currentFilters[i].name === getFilterType(type) ?
                 {
                     name: currentFilters[i].name,
-                    on: currentFilters[i].on.concat(type),
+                    on: this.state.filterIncludeExclude ? {
+                        include: currentFilters[i].on.include.concat(type),
+                        exclude: currentFilters[i].on.exclude
+                        } :
+                        {
+                        include: currentFilters[i].on.include,
+                        exclude: currentFilters[i].on.exclude.concat(type)
+                    },
                     off: currentFilters[i].off.filter(value => value !== type)
                 }
                 : currentFilters[i]
@@ -121,12 +137,37 @@ class App extends React.Component {
         })
     }
 
-    FilterSelected = () => {
+    /**
+     * @returns {map} : {inc: included filters, exc: excluded filters}
+     */
+    getPressedFilters() {
+        let incArray = []
+        let excArray = []
+        this.state.filters.map(filter =>
+            filter.on.include.forEach(
+                filt => incArray.push(filt)
+
+            ))
+        this.state.filters.map(filter =>
+            filter.on.exclude.forEach(
+                filt => excArray.push(filt)
+            ))
+        return {inc: incArray, exc: excArray}
+    }
+
+    /**
+     * @param {boolean} value : true = included filters, false = excluded filters
+     */
+    FilterSelected = (value) => {
+        let arr = value ? this.getPressedFilters().inc :
+                        this.getPressedFilters().exc
         return (
-            this.state.filtersPressed.map((type, i) =>
+            arr.map((type, i) =>
                 <CSSTransition key={i} classNames="filtered" timeout={{ enter: 500, exit: 300}} >
                     <button className="filter-button" onClick={this.DeactivateFilter.bind(this, type)}
-                        key={i}>{type}</button>
+                        key={i}>{Filters(type)}
+                        <FontAwesomeIcon className="remove-filter" icon={faTimes} />
+                    </button>
                 </CSSTransition>
             )
         )
@@ -136,6 +177,9 @@ class App extends React.Component {
         return (
             <div>
                 <TransitionGroup>
+                    <CSSTransition key={0} classNames="filtered" timeout={{ enter: 500, exit: 300}} >
+                        {filterObject.off.length > 0 ? <i>{filterObject.name + ": "}</i> : <i visibilty="hidden"></i>}
+                    </CSSTransition>
                     {this.CreateRow(filterObject.name, filterObject.off)}
                 </TransitionGroup>
             </div>
@@ -218,9 +262,9 @@ class App extends React.Component {
                 <div className="fa-box" >{this.state.newFood.obj.name}</div>
                 <div className="fa-box" >Start</div>
                     <i></i>
-                    <FontAwesomeIcon className="fa-box" icon={faCalendarMinus} onClick={handleClick.bind(this, -1, 0)}/>
+                    <FontAwesomeIcon className="fa-box" icon={faCalendarMinus} onClick={handleClick.bind(this, -1, -1)}/>
                     <div className="fa-box">{this.state.newFood.start.split(" ")[0]}</div>
-                    <FontAwesomeIcon className="fa-box" icon={faCalendarPlus} onClick={handleClick.bind(this, 1, 0)}/>
+                    <FontAwesomeIcon className="fa-box" icon={faCalendarPlus} onClick={handleClick.bind(this, 1, 1)}/>
                     <i></i>
                 <div className="fa-box">{getShortDate(this.state.newFood.start)}</div>
 
@@ -249,20 +293,34 @@ class App extends React.Component {
         if (this.state.filtersPressed.length === 0 &&
             this.state.textfilter.length === 0)
             return this.state.foods
-        let mainfilter = this.state.filters[0].on.length === 0 ?
-            this.state.filters[0].off :
-            this.state.filters[0].on
-        let sidefilter = this.state.filters[1].on.length === 0 ?
-            this.state.filters[1].off :
-            this.state.filters[1].on
-        let dayfilter = this.state.filters[3].on.length === 0 ?
-            this.state.filters[3].off :
-            this.state.filters[3].on
+        let mainfilter = {
+            inc: this.state.filters[0].on.include.length === 0 ?
+                this.state.filters[0].off :
+                this.state.filters[0].on.include,
+            exc: this.state.filters[0].on.exclude
+        }
+        console.log(mainfilter)
+        let sidefilter = {
+            inc: this.state.filters[1].on.include.length === 0 ?
+                this.state.filters[1].off :
+                this.state.filters[1].on.include,
+            exc: this.state.filters[1].on.exclude
+        }
+        let dayfilter = {
+            inc: this.state.filters[3].on.include.length === 0 ?
+                this.state.filters[3].off :
+                this.state.filters[3].on.include,
+            exc: this.state.filters[3].on.exclude
+        }
         const arr = this.state.foods.filter(food =>
-                mainfilter.indexOf(food.maintype) !== -1 &&
-                func.arrayElementInArray(food.sidetype.split(", "), sidefilter) &&
-                dayfilter.indexOf(food.foodamount) !== -1 &&
-                func.checkSpeedFilter(food.time, this.state.filters[2].on) &&
+                mainfilter.inc.indexOf(food.maintype) !== -1 &&
+                mainfilter.exc.indexOf(food.maintype) === -1 &&
+                func.arrayElementInArray(food.sidetype.split(", "), sidefilter.inc) &&
+                !func.arrayElementInArray(food.sidetype.split(", "), sidefilter.exc) &&
+                dayfilter.inc.indexOf(food.foodamount) !== -1 &&
+                dayfilter.exc.indexOf(food.foodamount) === -1 &&
+                func.checkSpeedFilter(food.time, this.state.filters[2].on.include) &&
+                this.state.filters[2].on.exclude.length === 0 ? true : !func.checkSpeedFilter(food.time, this.state.filters[2].on.exclude) &&
                 food.name.toLowerCase().includes(this.state.textfilter.toLowerCase())
             )
         return arr
@@ -386,9 +444,9 @@ class App extends React.Component {
         )
     }
 
-    // onClick={this.SelectFood.bind(this, food)}
     render() {
-        const filtersSelected = this.FilterSelected()
+        const includeFiltersSelected = this.FilterSelected(true)
+        const excludeFiltersSelected = this.FilterSelected(false)
         const mainFilterRow = this.FilterRow(this.state.filters[0])
         const sideFilterRow = this.FilterRow(this.state.filters[1])
         const speedFilterRow = this.FilterRow(this.state.filters[2])
@@ -424,15 +482,16 @@ class App extends React.Component {
                                 {speedFilterRow}
                                 {dayFilterRow}
                                 <div className="include-exclude" onClick={() => {
+                                    console.log(this.getPressedFilters())
                                     this.setState({
                                         filterIncludeExclude: !this.state.filterIncludeExclude
                                     })
                                 }}>
                                     <div className="include-exclude-inner">
                                         {this.state.filterIncludeExclude ?
-                                            <div className="include"><FontAwesomeIcon icon={faThumbsUp}
+                                            <div className="include"><FontAwesomeIcon icon={faCheck}
                                             /><i>Must Include</i> </div>:
-                                            <div className="exclude"><FontAwesomeIcon icon={faThumbsDown}/><i>Exclude</i> </div>
+                                            <div className="exclude"><FontAwesomeIcon icon={faTimes}/><i>Exclude</i> </div>
                                         }
                                     </div>
                                 </div>
@@ -451,7 +510,16 @@ class App extends React.Component {
                 : null} </div>
                 <div>
                     <TransitionGroup>
-                        {filtersSelected}
+                        <CSSTransition key={0} classNames="filtered" timeout={{ enter: 500, exit: 300}} >
+                            {this.getPressedFilters().inc.length > 0 ? <FontAwesomeIcon icon={faCheck} className="filtered" /> : <i></i>}
+                        </CSSTransition>
+                    {includeFiltersSelected}
+                    </TransitionGroup>
+                    <TransitionGroup>
+                        <CSSTransition key={0} classNames="filtered" timeout={{ enter: 500, exit: 300}} >
+                            {this.getPressedFilters().exc.length > 0 ? <FontAwesomeIcon icon={faTimes} className="filtered" /> :  <i></i>}
+                        </CSSTransition>
+                    {excludeFiltersSelected}
                     </TransitionGroup>
                 </div>
                 <div>
