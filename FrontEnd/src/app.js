@@ -8,10 +8,10 @@ import { CSSTransition } from 'react-transition-group';
 import {
     faHourglass, faHourglassEnd,
     faCartArrowDown,
-    faSort, faSortUp, faSortDown, faBars, faSlidersH, faTimes, faCheck, faFish, faDrumstickBite, faKiwiBird, faSeedling
+    faSort, faSortUp, faSortDown, faBars, faSlidersH, faTimes, faCheck, faFish, faDrumstickBite, faKiwiBird, faSeedling, faShare
 
 } from "@fortawesome/free-solid-svg-icons";
-import { faHourglass as faHourglassRegular, faCalendarMinus, faCalendarPlus} from "@fortawesome/free-regular-svg-icons"
+import { faHourglass as faHourglassRegular, faCalendarMinus, faCalendarPlus, faTimesCircle} from "@fortawesome/free-regular-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const func = require("./MyFuncs")
@@ -166,7 +166,7 @@ class App extends React.Component {
                 <CSSTransition key={i} classNames="filtered" timeout={{ enter: 500, exit: 300}} >
                     <button className="filter-button" onClick={this.DeactivateFilter.bind(this, type)}
                         key={i}>{Filters(type)}
-                        <FontAwesomeIcon className="remove-filter" icon={faTimes} />
+                        <FontAwesomeIcon className="remove-filter" icon={faTimesCircle} />
                     </button>
                 </CSSTransition>
             )
@@ -268,7 +268,7 @@ class App extends React.Component {
                     <i></i>
                 <div className="fa-box">{getShortDate(this.state.newFood.start)}</div>
 
-                <div className="fa-box">End 2</div>
+                <div className="fa-box">End</div>
                     <i></i>
                     <FontAwesomeIcon className="fa-box" icon={faCalendarMinus} onClick={handleClick.bind(this, 0, -1)}/>
                     <div className="fa-box">{this.state.newFood.end.split(" ")[0]}</div>
@@ -320,7 +320,7 @@ class App extends React.Component {
                 dayfilter.inc.indexOf(food.foodamount) !== -1 &&
                 dayfilter.exc.indexOf(food.foodamount) === -1 &&
                 func.checkSpeedFilter(food.time, this.state.filters[2].on.include) &&
-                this.state.filters[2].on.exclude.length === 0 ? true : !func.checkSpeedFilter(food.time, this.state.filters[2].on.exclude) &&
+                (this.state.filters[2].on.exclude.length === 0 ? true : !func.checkSpeedFilter(food.time, this.state.filters[2].on.exclude)) &&
                 food.name.toLowerCase().includes(this.state.textfilter.toLowerCase())
             )
         return arr
@@ -330,7 +330,7 @@ class App extends React.Component {
         return (
             foods.map((food, i) =>
                 <tr key={i}>
-                <td className="maintype_table">{food.maintype}</td>
+                <td className="maintype_table">{Filters(food.maintype)}</td>
                 <td className="sidetype_table">{food.sidetype}</td>
                 <this.NameLink food={food} />
                 {this.state.show_timeseaten ? <td>{food.timeseaten}</td> : null}
@@ -342,7 +342,7 @@ class App extends React.Component {
                         newFoodSelected: true,
                         newFood: func.getStartAndEndDays(this.state.foods, food, 0, food.foodamount)
                     })}}>
-                    <FontAwesomeIcon icon={faCartArrowDown} />
+                    <FontAwesomeIcon icon={faShare} className="select-food-button" />
                 </td>
                 </tr>
             )
@@ -525,7 +525,7 @@ class App extends React.Component {
                 <div>
                     <table id="food-table" className="food-table">
                         <tbody>
-                            <tr>
+                            <tr className="table-headers">
                                 <this.TableHeader name={"main"} />
                                 <this.TableHeader name={"side"} />
                                 <this.TableHeader name={"name"} />

@@ -231,5 +231,13 @@ table {
 }
 .remove-filter {
     position: relative;
-    margin-left: 5px;
+    margin-left: 1px;
+    height: 14px;
+}
+.table-headers  {
+    font-size: 13px;
+    align-content: center;
+}
+.select-food-button {
+    font-size: 24px;
 }
