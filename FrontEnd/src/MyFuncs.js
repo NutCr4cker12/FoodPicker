@@ -125,11 +125,17 @@ function getLatestFood(foods) {
     })
     console.log(latesFood)
     return latesFood*/
-    let biggestDate = -1
+    function endingDay(food) {
+        if (!food.lasteaten) return 0
+        return Date.parse(new Date(food.lasteaten[1]).toDateString())
+    }
+    let biggestDate = 0
     foods.forEach(food => {
-        let le = lastEaten(food.lastEaten)
-        if (le === "Current" && biggestDate < 0) latesFood = food
-        if (le.indexOf("days") !== -1 && biggestDate < Number(le.split(" ")[1])) latesFood = food
+        let le = endingDay(food)
+        if (le > biggestDate) {
+            biggestDate = le
+            latesFood = food
+        }
     })
     console.log(latesFood)
     return latesFood
@@ -202,8 +208,11 @@ function sortFoods(foods, sortBy) {
  */
 function getStartAndEndDays(foods, food, startDiff, endDiff) {
     let toDay_ms = Date.parse(new Date().toDateString())
-    let startDay_ms = toDay_ms + (nextAvailableFreeDay(foods)*-1 + startDiff)*oneDay
-    let endDay_ms = startDay_ms + endDiff*oneDay
+    //let startDay_ms = toDay_ms + (nextAvailableFreeDay(foods)*-1 + startDiff)*oneDay
+    let startDay_ms = Date.parse(
+        new Date(getLatestFood(foods).lasteaten[1]).toDateString())
+        + startDiff*oneDay
+    let endDay_ms = startDay_ms + (endDiff-1)*oneDay
     let startDayString = new Date(startDay_ms).toDateString()
     let endDayString = new Date(endDay_ms).toDateString()
     console.log("today ms" + toDay_ms)

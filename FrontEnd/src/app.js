@@ -54,8 +54,6 @@ class App extends React.Component {
             foods: [],
             newFoodSelected: false,
             newFood: {obj: null, start: 0, end: 1},
-            latestfoods: [],
-            filtersPressed: [],
             filters: [
                 {name: "main", on: {include: [], exclude: []}, off: MAINTYPEFILTERS},
                 {name: "side", on: {include: [], exclude: []}, off: SIDETYPEFILTERS},
@@ -87,8 +85,20 @@ class App extends React.Component {
     componentDidMount() {
         console.log("mounttas")
         axios.get(URL).then(response => {
-            this.setState({foods: response.data})
+            const excfilter = func.getLatestFood(response.data).maintype
+            this.setState({
+                foods: response.data,
+                filters: [
+                    {name: "main", on: {include: [], exclude: [excfilter]},
+                        off: MAINTYPEFILTERS.filter(type => type !== excfilter)},
+                    {name: "side", on: {include: [], exclude: []}, off: SIDETYPEFILTERS},
+                    {name: "speed", on: {include: [], exclude: []}, off: SPEEDTYPEFILTERS},
+                    {name: "day", on: {include: [], exclude: []}, off: DAYTYPEFILTER}
+                ],
+            })
         })
+        const wrapper = document.getElementById("fading-text")
+        if (wrapper) wrapper.classList.toggle("fade")
     }
 
     DeactivateFilter(type, i) {
@@ -106,9 +116,6 @@ class App extends React.Component {
                 : currentFilters[i]
         }
         this.setState({
-            filtersPressed: this.state.filtersPressed.filter(
-                value => value !== type
-            ),
             filters: currentFilters
         })
     }
@@ -132,7 +139,6 @@ class App extends React.Component {
                 : currentFilters[i]
         }
         this.setState({
-            filtersPressed: this.state.filtersPressed.concat(type).sort(),
             filters: currentFilters
         })
     }
@@ -222,13 +228,10 @@ class App extends React.Component {
      */
     SelectFood = () => {
         let newFood = this.state.newFood.obj
-        console.log("syodaan nakojaan " + newFood.name)
         const startDay = this.state.newFood.start
         const endDay = this.state.newFood.end
         newFood.lasteaten = [new Date(startDay).toDateString(), new Date(endDay).toDateString()]
-        console.log(newFood)
         axios.post(URL + "/select/", newFood).then(response => {
-            console.log("updated: " + response.data)
             this.componentDidMount()
         })
         this.setState({
@@ -251,7 +254,6 @@ class App extends React.Component {
                     end: endDate
                 }
             })
-            console.log(this.state.newFood)
         }
         function getShortDate(date) {
             const month = new Date(date).getMonth() + 1
@@ -279,6 +281,7 @@ class App extends React.Component {
                 <div className="fa-box"
                     onClick={() => this.setState({
                         newFoodSelected: false,
+                        newFood: {obj: null, start: 0, end: 1 },
                         dropdown: ""
                         })}>
                         Cancel</div><i></i>
@@ -290,16 +293,12 @@ class App extends React.Component {
     }
 
     FilteredFoods() {
-        if (this.state.filtersPressed.length === 0 &&
-            this.state.textfilter.length === 0)
-            return this.state.foods
         let mainfilter = {
             inc: this.state.filters[0].on.include.length === 0 ?
                 this.state.filters[0].off :
                 this.state.filters[0].on.include,
             exc: this.state.filters[0].on.exclude
         }
-        console.log(mainfilter)
         let sidefilter = {
             inc: this.state.filters[1].on.include.length === 0 ?
                 this.state.filters[1].off :
@@ -319,8 +318,9 @@ class App extends React.Component {
                 !func.arrayElementInArray(food.sidetype.split(", "), sidefilter.exc) &&
                 dayfilter.inc.indexOf(food.foodamount) !== -1 &&
                 dayfilter.exc.indexOf(food.foodamount) === -1 &&
-                func.checkSpeedFilter(food.time, this.state.filters[2].on.include) &&
-                (this.state.filters[2].on.exclude.length === 0 ? true : !func.checkSpeedFilter(food.time, this.state.filters[2].on.exclude)) &&
+                (this.state.filters[2].off.length === SPEEDTYPEFILTERS.length ||
+                (func.checkSpeedFilter(food.time, this.state.filters[2].on.include) &&
+                (this.state.filters[2].on.exclude.length === 0 || !func.checkSpeedFilter(food.time, this.state.filters[2].on.exclude)))) &&
                 food.name.toLowerCase().includes(this.state.textfilter.toLowerCase())
             )
         return arr
@@ -340,7 +340,7 @@ class App extends React.Component {
                     document.getElementById("food-table").classList.toggle("set-to-background")
                     this.setState({
                         newFoodSelected: true,
-                        newFood: func.getStartAndEndDays(this.state.foods, food, 0, food.foodamount)
+                        newFood: func.getStartAndEndDays(this.state.foods, food, 1, food.foodamount)
                     })}}>
                     <FontAwesomeIcon icon={faShare} className="select-food-button" />
                 </td>
@@ -419,7 +419,6 @@ class App extends React.Component {
                 }
                 : newSortBy[i]
         }
-        console.log(newSortBy)
         this.setState({
             foods: func.sortFoods(this.state.foods, newSortBy),
             sortBy: newSortBy
@@ -482,7 +481,7 @@ class App extends React.Component {
                                 {speedFilterRow}
                                 {dayFilterRow}
                                 <div className="include-exclude" onClick={() => {
-                                    console.log(this.getPressedFilters())
+                                    console.log(func.getLatestFood(this.state.foods))
                                     this.setState({
                                         filterIncludeExclude: !this.state.filterIncludeExclude
                                     })
@@ -523,6 +522,7 @@ class App extends React.Component {
                     </TransitionGroup>
                 </div>
                 <div>
+                    {this.state.newFood.obj ? <div  id="fading-text" className="fading-text"><i>{"Lets eat: " + this.state.newFood.obj.name}</i></div> : null}
                     <table id="food-table" className="food-table">
                         <tbody>
                             <tr className="table-headers">
