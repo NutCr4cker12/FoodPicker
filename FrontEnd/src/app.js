@@ -4,6 +4,7 @@ import "./index.css";
 import { isNumber } from 'util';
 import { TransitionGroup } from 'react-transition-group';
 import { CSSTransition } from 'react-transition-group';
+import ShopList from "./ShopList"
 
 import {
     faHourglass, faHourglassEnd,
@@ -16,7 +17,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const func = require("./MyFuncs")
 
-//const URL = "http://localhost:3001/api/foods"
+// const URL = "http://localhost:3001/api/foods"
 const URL = "/api/foods"
 
 const MAINTYPEFILTERS = ["kala", "kana", "kasvis", "liha"]
@@ -77,7 +78,9 @@ class App extends React.Component {
                 {name: "duration", clicked: 0, order: 0},
                 {name: "lasteaten", clicked: 0, order: 0}
             ],
-            filterIncludeExclude: true // true = include, false = exclude
+            filterIncludeExclude: true, // true = include, false = exclude,
+            shoplist: false,
+            testVisible: true
         }
         this.SetFoodParameters = this.SetFoodParameters.bind(this)
     }
@@ -152,7 +155,6 @@ class App extends React.Component {
         this.state.filters.map(filter =>
             filter.on.include.forEach(
                 filt => incArray.push(filt)
-
             ))
         this.state.filters.map(filter =>
             filter.on.exclude.forEach(
@@ -202,14 +204,6 @@ class App extends React.Component {
         )
     }
 
-    CreateRow2 = (name, arr) => {
-        return (
-            arr.map((type, i) =>
-                    <button onClick={this.ActivateFilter.bind(this, type)} key={i}>{Filters(type)}</button>
-                )
-        )
-    }
-
     NameLink = ({food}) => {
         return (
             food.link === "" ?
@@ -244,7 +238,7 @@ class App extends React.Component {
         function handleClick(start, end) {
             const origStart = this.state.newFood.start
             const origEnd = this.state.newFood.end
-            if (origStart === origEnd && (start > 0 || end < 0)) return
+            if (origStart === origEnd && (start!==end && end < 0)) return
             const startDate = func.shiftDay(this.state.newFood.start, start)
             const endDate = func.shiftDay(this.state.newFood.end, end)
             this.setState({
@@ -454,6 +448,7 @@ class App extends React.Component {
         return (
             <div>
                 {this.state.newFoodSelected ? <this.SetFoodParameters /> :
+                this.state.shoplist ? <ShopList name="hello there" prevState={this.state}/> :
             <div id="main">
                 <this.MenuItem name={"Filters"} dropName={"filtermenu"} icon={faBars} />
                 <this.MenuItem name={"Show"} dropName={"showmenu"} icon={faSlidersH}/>
@@ -483,7 +478,8 @@ class App extends React.Component {
                                 <div className="include-exclude" onClick={() => {
                                     console.log(func.getLatestFood(this.state.foods))
                                     this.setState({
-                                        filterIncludeExclude: !this.state.filterIncludeExclude
+                                        filterIncludeExclude: !this.state.filterIncludeExclude,
+                                        shoplist: true
                                     })
                                 }}>
                                     <div className="include-exclude-inner">
