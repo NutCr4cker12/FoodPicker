@@ -17,7 +17,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const func = require("./MyFuncs")
 
-// const URL = "http://localhost:3001/api/foods"
 const URL = "/api/foods"
 
 const MAINTYPEFILTERS = ["kala", "kana", "kasvis", "liha"]

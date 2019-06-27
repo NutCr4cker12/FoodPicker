@@ -17,9 +17,6 @@ const db = mongoose.model("foodpicker", {
     timeseaten: Number,
     lasteaten: Array
 })
-db.find({}).then(food => {
-    console.log(food)
-})
 /*
 db.find({}).then(food => {
     var target = undefined
