@@ -1,4 +1,6 @@
 const mongoose = require("mongoose")
+const dotenv = require("dotenv")
+dotenv.config()
 
 const url = process.env.MONGODB_URL
 
@@ -14,6 +16,9 @@ const db = mongoose.model("foodpicker", {
     time: Number,
     timeseaten: Number,
     lasteaten: Array
+})
+db.find({}).then(food => {
+    console.log(food)
 })
 /*
 db.find({}).then(food => {
