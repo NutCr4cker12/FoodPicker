@@ -1,0 +1,28 @@
+{
+  "name": "kisahome_backend",
+  "version": "1.0.0",
+  "description": "backend",
+  "main": "src",
+  "directories": {
+    "lib": "src",
+    "config": "config/"
+  },
+  "scripts": {
+    "start": "node src/",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Kimi Heinonen",
+  "license": "ISC",
+  "dependencies": {
+    "@feathersjs/authentication": "^4.4.3",
+    "@feathersjs/authentication-local": "^4.4.3",
+    "@feathersjs/authentication-oauth": "^4.4.3",
+    "@feathersjs/configuration": "^4.4.3",
+    "@feathersjs/express": "^4.4.3",
+    "cors": "^2.8.5",
+    "feathers-mongodb-fuzzy-search": "^1.1.1",
+    "feathers-mongoose": "^8.2.0",
+    "helmet": "^3.21.2",
+    "mongoose": "^5.8.4"
+  }
+}

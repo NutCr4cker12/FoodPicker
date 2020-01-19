@@ -1,0 +1,39 @@
+{
+	"host": "localhost",
+	"port": 3000,
+	"public": "../public",
+	"authentication": {
+		"entity": "user",
+		"service": "/v1/users",
+		"secret": "QLTbyqNkxvh+8wIo+din3UFFX6w=",
+		"authStrategies": [
+		  "jwt",
+		  "local"
+		],
+		"jwtOptions": {
+		  "header": {
+			"typ": "access"
+		  },
+		  "audience": "https://yourdomain.com",
+		  "issuer": "feathers",
+		  "algorithm": "HS256",
+		  "expiresIn": "1d"
+		},
+		"local": {
+		  "usernameField": "email",
+		  "passwordField": "password"
+		},
+		"oauth": {
+		  "redirect": "http://localhost:3000",      
+		  "google": {
+			"scope": [
+			  "openid",
+			  "profile",
+			  "email"
+			],
+			"nonce": true
+		  }
+		}
+	  },	
+	"mongodb": "mongodb+srv://paakayttaja:cg6TwxkhLLijoP@fstrainmongodb-3ve2c.mongodb.net/foodpickerdb"
+}
