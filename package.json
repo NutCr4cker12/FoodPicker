@@ -1,10 +1,14 @@
 {
-  "name": "osa3",
-  "version": "1.0.0",
+  "name": "FoodPicker",
+  "version": "2.0.0",
   "description": "FoodPicker",
-  "main": "index.js",
+  "main": "backend/src",
+  "directories": {
+    "lib": "backend/src",
+    "config": "backend/config/"
+  },
   "scripts": {
-    "start": "node index.js",
+    "start": "node frontend/src/index.js",
     "watch": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:ui": "cd FrontEnd/ && npm run build && cp -r build ../",

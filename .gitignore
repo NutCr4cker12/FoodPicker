@@ -3,3 +3,4 @@
 /FrontEnd/.env*
 /FrontEnd/build/
 /build
+/.env*
