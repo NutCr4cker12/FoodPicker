@@ -34,8 +34,8 @@ app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb', extended: true }));
 //TODO: REMOVE! app.use(favicon(path.join(app.get('public'), 'favicon.ico')));
 
-// Host the public folder
-app.use('/', express.static(app.get('public')));
+// Host the frontend files
+app.use(express.static('build'))
 
 // Set up Plugins and providers
 app.configure(express.rest());

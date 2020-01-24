@@ -6,3 +6,5 @@
 /.env*
 **/oauht.txt
 /.vscode/launch.json
+/build/*
+/build/*

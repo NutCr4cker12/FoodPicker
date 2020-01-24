@@ -1,7 +1,7 @@
 {
 	"host": "localhost",
 	"port": 3000,
-	"public": "../public",
+	"public": "build",
 	"authentication": {
 		"entity": "user",
 		"service": "/v1/users",
@@ -34,6 +34,5 @@
 			"nonce": true
 		  }
 		}
-	  },	
-	"mongodb": "mongodb+srv://paakayttaja:cg6TwxkhLLijoP@fstrainmongodb-3ve2c.mongodb.net/foodpickerdb"
+	  }
 }

@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 
 module.exports = function (app) {
   mongoose.connect(
-    app.get('mongodb'),
+    process.env.MONGODB_URL,
     { useCreateIndex: true, useNewUrlParser: true }
   ).catch(err => {
     console.error(err);
