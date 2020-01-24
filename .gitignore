@@ -4,3 +4,5 @@
 /FrontEnd/build/
 /build
 /.env*
+**/oauht.txt
+/.vscode/launch.json
