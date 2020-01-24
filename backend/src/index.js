@@ -1,8 +1,8 @@
 /* eslint-disable no-console */
 const app = require('./app');
 const hostname = app.get('host');
-const port = app.get('port') || 3001;
-const server = app.listen(port)
+const port = app.get('port');
+const server = app.listen(process.env.PORT || port)
 // const server = app.listen(port, hostname);
 
 process.on('unhandledRejection', (reason, p) =>
