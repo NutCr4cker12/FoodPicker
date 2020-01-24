@@ -12,6 +12,7 @@
     "watch": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:ui": "cd FrontEnd/ && npm run build && cp -r build ../",
+    "heroku": "git push heroku master && heroku open",
     "deploy": "npm run build:ui && git add . && git commit -m autobuild && git push origin master && git push heroku master && heroku open"
   },
   "author": "Kimi Heinonen",
