@@ -9,25 +9,15 @@ import Table from '../core/Table'
 import FoodEdit from './foodEdit'
 import SelectedFood from './SelectedFood'
 
-import { Button } from '@material-ui/core';
-
 import { connect } from 'react-redux'
 import { setFilters, selectFood, setFoods, onSetOpenFilters, distincts, setEditFood, setLatestFood } from './foodAction'
 import { setError } from '../App/AppActions';
 
-import AddIcon from '@material-ui/icons/Add';
-
 const useStyles = makeStyles(theme => ({
 	root: theme.root,
-	button: {
-		marginRight: theme.spacing(2),
-		marginLeft: theme.spacing(2),
-		minWidth: "133px",
-		// maxHeight: "36px"
-	}
 }))
 
-const columns = ["Main", "Side", "Food", "Count"]
+const columns = ["Main", "Side", "Food", "Count", "LastEaten", "Cooking Time", "Food Amount"]
 
 const defaultFood = {
 	name: "Name",
@@ -39,47 +29,40 @@ const defaultFood = {
 	timeseaten: 0
 }
 
-const Foods = ({ foods, sort, onSelectFood, onRefresh, filters, search, setOpenFilter, page, selectedFood, foodEdit, initFilters, onSetEditFood }) => {
+const Foods = ({ foods, sort, onSelectFood, onRefresh, filters, search, setOpenFilter, page, limit, selectedFood, foodEdit, initFilters, onSetEditFood }) => {
 	const classes = useStyles()
 
 	if (!foods.limit) {  // Init fetching
 		initFilters()
-		onRefresh(page, filters, sort, search)
+		onRefresh(page, filters, sort, search, limit)
 	}
 
 
 	return (
 		<Paper className={classes.root}>
-			<Search search={search} onSetSearch={s => onRefresh(page, filters, sort, s)} >
-				<Button
-					variant="contained"
-					onClick={() => onSetEditFood(defaultFood)}
-					startIcon={<AddIcon />}
-					color="primary"
-					className={classes.button}
-				>
-					Add Food
-			</Button>
-			</Search>
+			<Search search={search} onSelectFood={onSelectFood} />
 			<Filters
 				setOpenFilter={setOpenFilter}
 				currentFilters={filters}
 				currentSort={sort}
-				onApply={(f, s) => onRefresh(page, f, s, search)}
+				onApply={(f, s) => onRefresh(page, f, s, search, limit)}
 				clearFilters={() => initFilters()}
 			/>
 			<Table
 				columns={columns}
 				data={foods}
 				sort={sort}
-				setSort={sort => onRefresh(page, filters, sort, search)}
+				limit={limit}
+				setSort={sort => onRefresh(page, filters, sort, search, limit)}
+				setLimit={limit => onRefresh(page, filters, sort, search, limit)}
 				onSelectFood={onSelectFood}
+				onAddFood={() => onSetEditFood(defaultFood)}
 				setOpenFilter={setOpenFilter}
 				page={page}
-				setPage={p => onRefresh(p, filters, sort, search)}
+				setPage={p => onRefresh(p, filters, sort, search, limit)}
 			/>
-			{selectedFood ? <SelectedFood onUpdate={() => onRefresh(page, filters, sort, search)} /> : null}
-			{foodEdit ? <FoodEdit foodEdit={foodEdit} onUpdate={() => onRefresh(page, filters, sort, search)} /> : null}
+			{selectedFood ? <SelectedFood onUpdate={() => onRefresh(page, filters, sort, search, limit)} /> : null}
+			{foodEdit ? <FoodEdit foodEdit={foodEdit} onUpdate={() => onRefresh(page, filters, sort, search, limit)} /> : null}
 		</Paper>
 	)
 }
@@ -94,6 +77,7 @@ const mapStateToProps = (state) => {
 		filters: state.food.filters,
 		search: state.food.search,
 		page: state.food.page,
+		limit: state.food.limit,
 		selectedFood: state.food.selectedFood,
 		foodEdit: state.food.foodEdit,
 	}
@@ -106,14 +90,15 @@ const mapDispatchToProps = (dispatch) => {
 		onSelectFood: (food) => {
 			dispatch(selectFood(food))
 		},
-		onRefresh: (page, filters, sort, search) => {
-			foods.list(filters, page, sort, search)
+		onRefresh: (page, filters, sort, search, limit) => {
+			foods.list(filters, page, sort, search, limit)
 				.then(result => {
 					dispatch(setFoods({
 						foods: result,
 						filters: filters,
 						sort: sort,
 						page: page,
+						limit: limit,
 						search: search
 					}))
 					foods.lastEaten()

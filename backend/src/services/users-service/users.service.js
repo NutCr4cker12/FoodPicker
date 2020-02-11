@@ -58,6 +58,4 @@ module.exports = function (app) {
       });
   }
 
-  createUser("kimiheinonen@hotmail.com", "3535kisahei", "Kimi Heinonen", "admin");
-  // createUser("sanna-mari.fincke@outlook.com", "", "Sanna-Mari Fincke", "user")
 }

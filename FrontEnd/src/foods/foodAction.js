@@ -29,3 +29,7 @@ export const setErrors = (errors) => {
 export const setLatestFood = (food) => {
 	return { type: "SET_LATEST_FOOD", food}
 }
+
+export const setOptions = (options) => {
+	return { type: "SET_SEARCH_OPTIONS", options }
+}

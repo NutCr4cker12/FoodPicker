@@ -10,8 +10,10 @@ const foodState = {
 		day: {}
 	},
 	search: "",
+	searchOptions: [],
 	sort: {},
 	page: 0,
+	limit: 10,
 	selectedFood: null,
 	foodEdit: null,
 	foodEditOpen: false,
@@ -41,7 +43,8 @@ export default (state = foodState, action) => {
 				filters: newState.filters,
 				sort: newState.sort,
 				search: newState.search,
-				page: newState.page
+				page: newState.page,
+				limit: newState.limit
 			})
 		case "SET_OPEN_FILTERS":
 			const open = state.filtersOpen;
@@ -52,6 +55,8 @@ export default (state = foodState, action) => {
 			return Object.assign({}, state, { errors: action.errors })
 		case "SET_LATEST_FOOD":
 			return Object.assign({}, state, { latestFood: action.food })
+		case "SET_SEARCH_OPTIONS":
+			return Object.assign({}, state, { searchOptions: action.options})
 		default:
 			return state
 	}

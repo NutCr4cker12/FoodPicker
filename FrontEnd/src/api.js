@@ -99,12 +99,12 @@ const convertFilters = (filters) => {
 
 const foodService = () => app.service('v1/foods')
 export const foods = {
-	list: (filters, page, sort, search = "") => {
+	list: (filters, page, sort, search = "", limit) => {
 		const f = convertFilters(filters)
 		const sorting = getSorting(sort)
 		var query = Object.assign(f, {
 			$skip: ((page - 1) < 0 ? 0 : page) * 10,
-			$limit: 10,
+			$limit: limit,
 			$sort: sorting,
 		})
 		if (search) query = Object.assign(query, { $search: search })
@@ -114,6 +114,7 @@ export const foods = {
 	create: food => foodService().create(food),
 	patch: (id, food) => foodService().patch(id, food),
 	remove: id => foodService().remove(id),
+	find: query => foodService().find({ query: query }),
 	distincts: () => {
 		return new Promise((resolve, reject) =>
 			foodService().find({ query: { $limit: 10000 } })

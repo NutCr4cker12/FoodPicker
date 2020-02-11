@@ -4,6 +4,7 @@ import { connect } from 'react-redux'
 import { Dialog, DialogActions, TextField, Button, DialogTitle, DialogContent, IconButton, Table, TableRow, TableCell, TableBody, Link, TableHead, Typography } from '@material-ui/core';
 import { DatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 import MomentUtils from "@date-io/moment";
+import moment from 'moment-timezone'
 import { selectFood, setEditFood } from './foodAction'
 
 import { makeStyles } from '@material-ui/core/styles';
@@ -12,6 +13,7 @@ import TodayIcon from '@material-ui/icons/Today';
 import CheckIcon from '@material-ui/icons/Check';
 import { foods } from '../api';
 import { setMessage, setError } from '../App/AppActions';
+import combineDates from '../core/combineDates';
 
 const useStyles = makeStyles(theme => ({
 	spread: theme.spreadDivColumn,
@@ -23,7 +25,6 @@ const useStyles = makeStyles(theme => ({
 		margin: theme.spacing(3)
 	},
 	selectFieldContainer: {
-		width: "250px",
 		padding: theme.spacing(2)
 	},
 	selectField: {
@@ -38,6 +39,11 @@ const useStyles = makeStyles(theme => ({
 		height: "60px"
 	}
 }))
+
+moment.locale("en")
+moment.updateLocale("en", {
+	week: { dow: 1, doy: 0 }
+})
 
 
 const toFineTime = (time) => {
@@ -107,10 +113,10 @@ const SelectedFood = ({ food, latestFood, onSelectFood, onSetEditFood, onUpdate,
 					</TableRow>
 				</TableHead>
 				<TableBody>
-					{food.lasteaten ? food.lasteaten.reverse().slice(0, 10).map((f, i) => (
+					{food.lasteaten ? combineDates(food.lasteaten.map(x => new Date(x))).map((f, i) => (
 						<TableRow key={i}>
 							<TableCell>
-								{toFineTime(new Date(f))}
+								{f}
 							</TableCell>
 						</TableRow>
 					)) : <TableRow><TableCell>No recordings</TableCell></TableRow>}

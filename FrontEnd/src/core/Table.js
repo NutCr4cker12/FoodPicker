@@ -14,6 +14,9 @@ import Tooltip from '@material-ui/core/Tooltip';
 import FilterListIcon from '@material-ui/icons/FilterList';
 import { Button } from '@material-ui/core';
 
+import AddIcon from '@material-ui/icons/Add';
+import combineDates from './combineDates';
+
 const useStyles = makeStyles(theme => ({
 	root: {
 		paddingLeft: theme.spacing(2),
@@ -43,16 +46,21 @@ const useStyles = makeStyles(theme => ({
 		top: 20,
 		width: 1,
 	},
+	button: {
+		marginRight: theme.spacing(2),
+		marginLeft: theme.spacing(2),
+		minWidth: "133px",
+	}
 }));
 
 
 export default (props) => {
 	const classes = useStyles();
-	const { columns, data, sort, setSort, onSelectFood, page, setPage, setOpenFilter } = props;
+	const { columns, data, sort, setSort, limit, setLimit, onSelectFood, onAddFood, page, setPage, setOpenFilter } = props;
 	if (!data) return (
 		<div />
 	)
-	
+
 	const foods = data.data
 	const count = data.total || 0;
 	const pager = count === 0 ? 0 : page;
@@ -70,8 +78,25 @@ export default (props) => {
 			<Typography className={classes.title} variant="h6" id="tableTitle">
 				Foods
 		  		</Typography>
+			<Tooltip title="Add New Food">
+				<Button
+					variant="contained"
+					onClick={onAddFood}
+					startIcon={<AddIcon />}
+					color="primary"
+					className={classes.button}
+					size="small" >
+					Add Food
+				</Button>
+			</Tooltip>
 			<Tooltip title="Filter list">
-				<Button endIcon={<FilterListIcon />} onClick={() => { setOpenFilter() }}>
+				<Button
+					variant="contained"
+					color="primary"
+					endIcon={<FilterListIcon />}
+					size="small"
+					className={classes.button}
+					onClick={() => { setOpenFilter() }}>
 					Filter
 					</Button>
 			</Tooltip>
@@ -134,6 +159,17 @@ export default (props) => {
 					<TableCell>
 						{d.timeseaten}
 					</TableCell>
+					<TableCell>
+						{d.lasteaten && d.lasteaten.length ? 
+						combineDates(d.lasteaten.map(x => new Date(x)), 1)[0].split(" - ")[0]
+						: ""}
+					</TableCell>
+					<TableCell>
+						{d.time}
+					</TableCell>
+					<TableCell>
+						{d.foodamount}
+					</TableCell>
 				</TableRow>
 			))}
 		</TableBody>
@@ -151,7 +187,9 @@ export default (props) => {
 			<TablePagination
 				component="div"
 				count={count}
-				rowsPerPage={10}
+				rowsPerPage={limit}
+				onChangeRowsPerPage={e => setLimit(e.target.value)}
+				rowsPerPageOptions={[10,20,40,50]}
 				page={pager}
 				onChangePage={(e, newPage) => {
 					e.preventDefault()

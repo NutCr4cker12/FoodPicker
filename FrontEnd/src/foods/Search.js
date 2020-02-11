@@ -3,25 +3,17 @@ import React, { useState } from 'react'
 import { fade, makeStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
+import Autocomplete from '@material-ui/lab/Autocomplete';
+import Box from '@material-ui/core/Box';
 
 import SearchIcon from '@material-ui/icons/Search';
+import ClearIcon from '@material-ui/icons/Clear';
+
+import { connect } from 'react-redux'
+import { setOptions } from './foodAction'
+import { foods } from '../api'
 
 const useStyles = makeStyles(theme => ({
-	search: {
-		position: 'relative',
-		borderRadius: theme.shape.borderRadius,
-		backgroundColor: fade(theme.palette.common.white, 0.15),
-		'&:hover': {
-			backgroundColor: fade(theme.palette.common.white, 0.25),
-		},
-		marginRight: theme.spacing(2),
-		marginLeft: 0,
-		width: '80%',
-		[theme.breakpoints.up('sm')]: {
-			marginLeft: theme.spacing(3),
-			width: 'auto',
-		},
-	},
 	margin: {
 		margin: theme.spacing(1),
 		maxWidth: "300px"
@@ -32,7 +24,7 @@ const useStyles = makeStyles(theme => ({
 		alignItems: "center",
 		width: "100%"
 	},
-	searchDiv : {
+	searchDiv: {
 		width: "60%"
 	},
 	btnDiv: {
@@ -40,35 +32,93 @@ const useStyles = makeStyles(theme => ({
 	},
 	div: {
 		flexGrow: 1
+	},
+	padding: {
+		padding: theme.spacing(2)
 	}
 }))
 
-export default ({ search, onSetSearch, children }) => {
-	const classes = useStyles()
-	const [searchState, setSearch] = useState(search)
-
+const boldSearched = (text, search) => {
+	if (!text || !search) return text;
+	search = search.toLowerCase()
+	text = text.toLowerCase()
+	const split = text.split(search);
+	const bolded = split.map((x, i) => {
+		if (i === split.length - 1) return x;
+		return (<span key={i}>{x}<b>{search}</b></span>)
+	})
 	return (
-		<div className={classes.center}>
-			<div className={classes.searchDiv}>
-			<TextField
-				type="search"
-				fullWidth={true}
-				value={searchState}
-				onChange={event => setSearch(event.target.value)}
-				placeholder="Search…"
-				className={classes.margin}
-				InputProps={{
-					startAdornment: <InputAdornment position="start">
-						<SearchIcon onClick={() => {
-							onSetSearch(searchState)
-						}} />
-					</InputAdornment>,
-				}}
-			/>
-			</div>
-			<div className={classes.btnDiv} >
-			{children}
-			</div>
-		</div>
+		<span>
+			{bolded.map(x => x)}
+		</span>
 	)
 }
+
+
+function Search(props) {
+	const classes = useStyles()
+	const { search, onSelectFood, children, options, onSetOptions } = props
+	const [searchState, setSearchState] = useState(search)
+
+	const setSearch = search => {
+		setSearchState(search)
+		onSetOptions(search)
+	}
+
+	return (
+		<Box display="block" justifyContent="center" className={classes.padding}>
+			<Autocomplete
+				options={options}
+				getOptionLabel={option => option.name}
+				renderOption={option => boldSearched(option.name, searchState)}
+				renderInput={params => {
+					var { InputProps, ...rest } = params;
+					InputProps.startAdornment = (
+						<InputAdornment position="start">
+							<SearchIcon />
+						</InputAdornment >)
+					return (
+						<TextField
+							{...rest}
+							placeholder="Search..."
+							variant="outlined"
+							value={searchState}
+							fullWidth
+							onChange={e => setSearch(e.target.value)}
+							InputProps={InputProps}
+						/>
+					)
+				}}
+				onChange={(e, value) => {
+					onSelectFood(value)
+				}}
+			/>
+			</ Box>
+	)
+}
+
+const mapStateToProps = (state) => {
+	return {
+		options: state.food.searchOptions
+	}
+}
+
+const mapDispatchToProps = (dispatch) => {
+	return {
+		onSetOptions: search => {
+			if (!search.length)
+				return dispatch(setOptions([]))
+			const query = { $regex: search }
+			foods.find(query)
+				.then(res => {
+					console.log(res)
+					dispatch(setOptions(res.data))
+				})
+				.catch(err => {
+					console.log(err)
+				})
+		}
+	}
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Search)

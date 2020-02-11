@@ -5,7 +5,7 @@ const { allowOnlyRoles } = require('../restrict');
 const parseSearch = (hook) => {
 	var q = hook.params.query;
 	if (q.$regex) {
-		q.name = q.$regex;
+		q.name = { $regex: new RegExp(q.$regex, 'i')};
 		delete q.$regex;
 	}
 	if (q.$lasteaten) {

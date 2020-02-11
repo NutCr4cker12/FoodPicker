@@ -9,14 +9,11 @@ import { makeStyles } from '@material-ui/core/styles';
 
 import ActionLock from '@material-ui/icons/Lock'
 
-// import Toolbar from '../core/Toolbar'
-
 // import { CookieDisclaimer } from '../home/CookieDisclaimer'
 
 //////////////////////////////////////////////////////////////////////////////
 
 import { connect } from 'react-redux'
-// import { BrowserRouter } from 'react-router-dom'
 import { browserHistory } from 'react-router'
 import { setMessage, setError, authUser } from '../App/AppActions'
 import { users } from '../api'
@@ -51,7 +48,7 @@ function SignIn(props) {
 
 	return (
 		<div className={classes.root}>
-			<Paper elevation={3}>
+			<Paper elevation={3} style={{ width: "100%"}}>
 				<List subheader={<ListSubheader>Sign In</ListSubheader>}>
 					<form onSubmit={submitHanlder} style={{ marginTop: '24px' }}>
 						<div>
