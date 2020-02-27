@@ -51,6 +51,16 @@ const formatNotes = note => {
 }
 
 /*
+TODO TO ADD:
+Telia 32.99 
+Pohjola 20.01
+Pohjola 53.83
+L&T 129.07
+Luottokortti 317.98
+
+*/
+
+/*
 	TODO: Count total sum for the month 
 			Count 'left to spend' fro the month
 			Add Edit for payments
