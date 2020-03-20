@@ -13,7 +13,7 @@ import App from './App/App'
 import SignIn from './signin/SignIn'
 import Home from './home/home'
 import Foods from './foods/Foods'
-import ShopList from './shoplist/shoplist'
+import ShopList from './shoplist/Shoplist'
 import Payments from './payments/payments'
 
 import reducers from './reducers'

@@ -10,7 +10,9 @@ module.exports = {
 		],
 		find: [],
 		get: [],
-		create: [],
+		create: [
+            hook => console.log(hook)
+        ],
 		update: [],
 		patch: [],
 		remove: []
