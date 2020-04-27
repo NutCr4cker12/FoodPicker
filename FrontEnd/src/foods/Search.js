@@ -1,13 +1,12 @@
 import React, { useState } from 'react'
 
-import { fade, makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import Box from '@material-ui/core/Box';
 
 import SearchIcon from '@material-ui/icons/Search';
-import ClearIcon from '@material-ui/icons/Clear';
 
 import { connect } from 'react-redux'
 import { setOptions } from './foodAction'
@@ -57,7 +56,7 @@ const boldSearched = (text, search) => {
 
 function Search(props) {
 	const classes = useStyles()
-	const { search, onSelectFood, children, options, onSetOptions } = props
+	const { search, onSelectFood, options, onSetOptions } = props
 	const [searchState, setSearchState] = useState(search)
 
 	const setSearch = search => {

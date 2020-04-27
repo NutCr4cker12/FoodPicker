@@ -46,27 +46,27 @@ moment.updateLocale("en", {
 })
 
 
-const toFineTime = (time) => {
-	const today = new Date()
-	const diff = Math.round((today - time) / (24 * 60 * 60 * 1000))
-	var ago;
-	if (diff > 356) {
-		ago = "Over a Year ago"
-	} else if (diff > 30) {
-		const m = Math.round(diff / 30)
-		ago = `${m} month${m > 1 ? "s" : ""} ago`
-	} else if (diff > 7) {
-		const w = Math.round(diff / 7)
-		ago = `${w} week${w > 1 ? "s" : ""} ago`
-	} else if (diff === 0) {
-		ago = "today"
-	} else if (diff === -1) {
-		ago = "tomorrow"
-	} else if (diff < -1) {
-		ago = `in ${diff * (-1)} days`
-	}
-	return `${time.getDate()}.${time.getMonth() + 1}.${time.getFullYear()} - ${ago}`
-}
+// const toFineTime = (time) => {
+// 	const today = new Date()
+// 	const diff = Math.round((today - time) / (24 * 60 * 60 * 1000))
+// 	var ago;
+// 	if (diff > 356) {
+// 		ago = "Over a Year ago"
+// 	} else if (diff > 30) {
+// 		const m = Math.round(diff / 30)
+// 		ago = `${m} month${m > 1 ? "s" : ""} ago`
+// 	} else if (diff > 7) {
+// 		const w = Math.round(diff / 7)
+// 		ago = `${w} week${w > 1 ? "s" : ""} ago`
+// 	} else if (diff === 0) {
+// 		ago = "today"
+// 	} else if (diff === -1) {
+// 		ago = "tomorrow"
+// 	} else if (diff < -1) {
+// 		ago = `in ${diff * (-1)} days`
+// 	}
+// 	return `${time.getDate()}.${time.getMonth() + 1}.${time.getFullYear()} - ${ago}`
+// }
 
 const getLatestFoodInfo = food => {
 	var lastDate = new Date(food.lasteaten.sort((a, b) => new Date(b) - new Date(a))[0])

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 import { makeStyles } from '@material-ui/core/styles';
 import { Paper, Button, TextField, Table, TableContainer, TableRow, TableCell, TableBody, TableHead, InputAdornment, IconButton } from '@material-ui/core'
@@ -37,7 +37,7 @@ const useStyles = makeStyles(theme => ({
     }
 }))
 
-const MONHTLY_ALLOWANCE = 700
+// const MONHTLY_ALLOWANCE = 700
 
 const formatDate = date => {
     if (typeof date === "string") date = new Date(date)
@@ -49,8 +49,8 @@ const formatDate = date => {
 
 const formatNotes = note => {
     if (!note) return ""
-    if (note.length < 10) return note;
-    return `${note.substr(0, 10)}...`
+    if (note.length < 50) return note;
+    return `${note.substr(0, 50)}...`
 }
 
 const yearStart = new Date(new Date().getUTCFullYear(), 0, 2)
@@ -68,8 +68,11 @@ function Payments(props) {
     const [endDate, setEndDate] = useState(yearEnd)
 
     var total, perMonth;
-    if (!data) onGetData(startDate, endDate)
-    else {
+    useEffect(() => {
+        onGetData(startDate, endDate)
+    }, [startDate, endDate, onGetData])
+
+    if (data) {
         total = data.reduce((total, x) => total + x.amount, 0).toFixed(1)
         const months = new Date(data[0].date).getUTCMonth() - new Date(data[data.length - 1].date).getUTCMonth() + 1
         

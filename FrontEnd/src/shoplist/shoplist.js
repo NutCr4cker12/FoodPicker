@@ -1,6 +1,6 @@
 import React from 'react'
 
-function shoplist(props) {
+function Shoplist(props) {
 	return (
 		<div>
 			shoplist
@@ -8,4 +8,4 @@ function shoplist(props) {
 	)
 }
 
-export default shoplist
+export default Shoplist
