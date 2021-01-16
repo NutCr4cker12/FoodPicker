@@ -7,6 +7,8 @@ import { browserHistory } from 'react-router'
 import FastfoodIcon from '@material-ui/icons/Fastfood';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 import PaymentIcon from '@material-ui/icons/Payment';
+import AccountBalanceIcon from '@material-ui/icons/AccountBalance';
+
 import { connect } from 'react-redux';
 import { closeDrawer } from '../App/AppActions'
 import NavItem from '../core/NavItem'
@@ -27,7 +29,8 @@ const Home = (props) => {
 	menuItems.push(<NavItem key={0} path="foods" icon={<FastfoodIcon />} />)
 	menuItems.push(<NavItem key={1} path="shoplist" icon={<ShoppingCartIcon />} />)
 	if (user.role === "admin") {
-		menuItems.push(<NavItem key={2} path="payments" icon={<PaymentIcon />} />)
+        menuItems.push(<NavItem key={2} path="payments" icon={<PaymentIcon />} />)
+        menuItems.push(<NavItem key={5} path="transactions" icon={<AccountBalanceIcon />} />)
 	}
 
 	return (

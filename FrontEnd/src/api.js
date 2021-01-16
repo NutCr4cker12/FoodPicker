@@ -169,3 +169,28 @@ export const payments = {
 	patch: (id, payment) => paymentsService().patch(id, payment),
 	remove: id => paymentsService().remove(id)
 }
+
+const transactionService = () => app.service('v1/transactions')
+export const transactionsApi = {
+    list: query => transactionService().find({ query: query }),
+    get: id => transactionService().get(id),
+    patch: (id, transaction) => transactionService().patch(id, transaction)
+}
+
+const categoriesService = () => app.service('v1/categories')
+export const categoriesApi = {
+    list: query => categoriesService().find({ query: query }),
+    get: id => categoriesService().get(id),
+    create: cateogry => categoriesService().create(cateogry),
+	patch: (id, cateogry) => categoriesService().patch(id, cateogry),
+	remove: id => categoriesService().remove(id)   
+}
+
+const categoryTypeService = () => app.service('v1/category-type')
+export const categoryTypesApi = {
+    list: query => categoryTypeService().find({ query: query }),
+    get: id => categoryTypeService().get(id),
+    create: type => categoryTypeService().create(type),
+	patch: (id, type) => categoryTypeService().patch(id, type),
+	remove: id => categoryTypeService().remove(id)   
+}

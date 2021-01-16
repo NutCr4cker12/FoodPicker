@@ -15,6 +15,8 @@ import Home from './home/home'
 import Foods from './foods/Foods'
 import ShopList from './shoplist/Shoplist'
 import Payments from './payments/payments'
+import Transactions from './transactions/Transactions'
+import Categories from './categories/Categories'
 
 import reducers from './reducers'
 import { authUser } from './App/AppActions'
@@ -83,6 +85,8 @@ function initRender() {
 					<Route path="/foods" component={Foods} />
 					<Route path="/shoplist" component={ShopList} />
 					<Route path="/payments" component={Payments} />
+                    <Route path="/transactions" component={Transactions} />
+                    <Route path="/categories" component={Categories} />
 				</Route>
 			</Router>
 		</Provider>
