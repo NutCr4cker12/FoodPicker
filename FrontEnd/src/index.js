@@ -86,9 +86,9 @@ function initRender() {
 					<Route path="/foods" component={Foods} />
 					<Route path="/shoplist" component={ShopList} />
 					<Route path="/payments" component={Payments} />
-                    <Route path="/payments/session" component={Session} />
-                    <Route path="/transactions" component={Transactions} />
-                    <Route path="/categories" component={Categories} />
+                    {/* <Route path="/payments/session" component={Session} /> */}
+                    {/* <Route path="/transactions" component={Transactions} />
+                    <Route path="/categories" component={Categories} /> */}
 				</Route>
 			</Router>
 		</Provider>

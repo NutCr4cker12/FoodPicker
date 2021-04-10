@@ -5,6 +5,7 @@ import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import Box from '@material-ui/core/Box';
+import { boldSearch } from '../core/BoldSearch'
 
 import SearchIcon from '@material-ui/icons/Search';
 
@@ -37,23 +38,6 @@ const useStyles = makeStyles(theme => ({
 	}
 }))
 
-const boldSearched = (text, search) => {
-	if (!text || !search) return text;
-	search = search.toLowerCase()
-	text = text.toLowerCase()
-	const split = text.split(search);
-	const bolded = split.map((x, i) => {
-		if (i === split.length - 1) return x;
-		return (<span key={i}>{x}<b>{search}</b></span>)
-	})
-	return (
-		<span>
-			{bolded.map(x => x)}
-		</span>
-	)
-}
-
-
 function Search(props) {
 	const classes = useStyles()
 	const { search, onSelectFood, options, onSetOptions } = props
@@ -69,7 +53,7 @@ function Search(props) {
 			<Autocomplete
 				options={options}
 				getOptionLabel={option => option.name}
-				renderOption={option => boldSearched(option.name, searchState)}
+				renderOption={option => boldSearch(option.name, searchState)}
 				renderInput={params => {
 					var { InputProps, ...rest } = params;
 					InputProps.startAdornment = (

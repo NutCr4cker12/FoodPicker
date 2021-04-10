@@ -2,18 +2,23 @@ import React, { useState, useEffect } from 'react'
 import { browserHistory } from 'react-router'
 
 import { makeStyles } from '@material-ui/core/styles';
-import { Paper, Button, TextField, Table, TableContainer, TableRow, TableCell, TableBody, TableHead, InputAdornment, IconButton } from '@material-ui/core'
+import { Paper, Button, TextField, Table, TableContainer, TableRow, TableCell, TableBody, TableHead, InputAdornment, IconButton, Checkbox, Tooltip } from '@material-ui/core'
 import { DatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
+import Autocomplete from '@material-ui/lab/Autocomplete';
 import MomentUtils from "@date-io/moment";
 import { connect } from 'react-redux'
 
 import TodayIcon from '@material-ui/icons/Today';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
+import DoneAllIcon from '@material-ui/icons/DoneAll';
+import MailIcon from '@material-ui/icons/Mail';
 
+import { boldSearch } from '../core/BoldSearch'
 import { payments } from '../api'
 import { setError, setMessage } from '../App/AppActions';
-import { setData, setDeleteId } from './paymentAction'
+import { setData, setDeleteId, setDistinctNotes } from './paymentAction'
+import MailDialog from './MailDialog'
 import BackDialog from '../core/BackDialog'
 
 const useStyles = makeStyles(theme => ({
@@ -35,6 +40,10 @@ const useStyles = makeStyles(theme => ({
     spacing: {
         margin: theme.spacing(2),
         width: "200px"
+    },
+    sendMailButton: {
+        marginLeft: "-30px",
+        marginRight: "-30px"
     }
 }))
 
@@ -54,37 +63,119 @@ const formatNotes = note => {
     return `${note.substr(0, 50)}...`
 }
 
-const yearStart = new Date(new Date().getUTCFullYear(), 0, 2)
+const yearStart = new Date(2020, 0, 2)
 const yearEnd = new Date(new Date().getUTCFullYear(), 11, 31)
 
 function Payments(props) {
     const classes = useStyles()
-    const { data, deleteId } = props;
-    const { onGetData, onAddPayment, onSetDeleteId, onDeletePayment } = props;
+    const { data, deleteId, distinctNotes } = props;
+    const { onGetData, onAddPayment, onSetDeleteId, onDeletePayment, onGetDistinctNotes, onSendMail } = props;
 
     const [date, setDate] = useState(new Date())
     const [amount, setAmount] = useState("")
     const [note, setNote] = useState("")
     const [startDate, setStartDate] = useState(yearStart)
     const [endDate, setEndDate] = useState(yearEnd)
+    const [image, setImage] = useState({});
+    const [inputRef, setInputRef] = useState(null);
+    const [toMailList, setToMailList] = useState([])
+    const [mailDialog, setMailDialog] = useState(null)
 
     var total, perMonth;
     useEffect(() => {
-        onGetData(startDate, endDate)
+        onGetData(startDate, endDate);
     }, [startDate, endDate, onGetData])
+
+    useEffect(() => {
+        if (distinctNotes.length === 0)
+            onGetDistinctNotes();
+    }, [onGetDistinctNotes, distinctNotes])
 
     if (data) {
         total = data.reduce((total, x) => total + x.amount, 0).toFixed(1)
         const months = data.length ? new Date(data[0].date).getUTCMonth() - new Date(data[data.length - 1].date).getUTCMonth() + 1 : 1;
-        
+
         perMonth = (total / months).toFixed(1);
     }
     const handleAddPayment = () => {
         if (parseFloat(amount) <= 0) return
-        onAddPayment({ date: date, amount: amount, notes: note }, startDate, endDate)
+        let payment = { date: date, amount: amount, notes: note }
+        if (image.name || image.data)
+            payment = { ...payment, imageName: image.name, imageData: image.data }
+        onAddPayment(payment, startDate, endDate)
         setDate(new Date())
         setAmount("")
         setNote("")
+        setImage({})
+    }
+
+    const AddImage = () => {
+        if ((image.name || image.data) && !window.confirm("Replace current image?")) {
+            return;
+        }
+        if (!inputRef) {
+            console.error("No input Ref!!")
+        } else {
+            inputRef.click();
+        }
+    }
+
+    const loadFile = () => {
+        if (typeof window.FileReader !== 'function') {
+            alert("The file API isn't supported on this browser yet.");
+            return;
+        }
+        let input = document.getElementById('fileinput');
+        if (!input) {
+            alert("Um, couldn't find the fileinput element.");
+        }
+        else if (!input.files) {
+            alert("This browser doesn't seem to support the 'files' property of file inputs.");
+        }
+        else if (!input.files[0]) {
+            alert("Please select an Excel file before clicking 'Process'");
+        }
+        else {
+            const selectedFile = input.files[0]
+
+            input.files = null // Without these the second upload try won't fire the onChange event
+            input.value = ''
+
+            let fileReader = new FileReader();
+            fileReader.onload = e => {
+                setImage({
+                    name: selectedFile.name,
+                    data: e.target.result
+                })
+            }
+            fileReader.readAsDataURL(selectedFile);
+        }
+    }
+
+    const downloadImage = (image) => {
+        var a = document.createElement("a");
+        a.href = image.data;
+        a.download = image.name;
+        a.click();
+    }
+
+    const handleMailList = (data) => {
+        // Already in the list -> remove it
+        if (toMailList.find(d => d._id === data._id) != null) {
+            setToMailList(toMailList.filter(x => x._id !== data._id));
+        } else {
+            toMailList.push(data);
+            setToMailList([...toMailList]);
+        }
+
+    }
+
+    const openMailDialog = () => {
+        setMailDialog(<MailDialog
+            mails={toMailList}
+            onSend={(from, to, title, content) => onSendMail(from, to, title, content, toMailList)}
+            onCancel={() => setMailDialog(null)}
+        />)
     }
 
     const datePicker = (label, value, setValue, views, format, minDate = new Date(2020, 0, 1), maxDate = yearEnd) => (
@@ -132,28 +223,44 @@ function Payments(props) {
                 />
             </div>
             <div className={classes.spacing}>
-                <TextField
-                    label="Note"
-                    value={note}
-                    onChange={e => setNote(e.target.value)}
+                <Autocomplete
+                    options={distinctNotes}
+                    renderOption={option => boldSearch(option, note)}
+                    renderInput={props =>
+                        <TextField
+                            {...props}
+                            label="Note"
+                            value={note}
+                            fullWidth
+                            onChange={e => setNote(e.target.value)} />
+                    }
+                    onChange={(e, value) => setNote(value || "")}
                 />
             </div>
             <Button
                 className={classes.spacing}
                 variant="contained"
                 color="primary"
-                startIcon={<AddIcon />}
-                onClick={() => handleAddPayment()}
-            >
-                Add Payment
-				</Button>
-            <Button 
+                onClick={() => AddImage()}>
+                Add Image
+            </Button>
+            {image.name &&
+                <div style={{ display: "flex", flexDirection: "row" }}>
+                    <Button onClick={() => downloadImage(image)}>
+                        {image.name}
+                    </Button>
+                    <IconButton onClick={() => setImage({})}>
+                        <DeleteForeverIcon />
+                    </IconButton>
+                </div>}
+            <Button
                 className={classes.spacing}
                 variant="contained"
                 color="primary"
-                onClick={() => browserHistory.push("/payments/session")}>
-                Add multiple payments
-            </Button>
+                startIcon={<AddIcon />}
+                onClick={() => handleAddPayment()}>
+                Add Payment
+			</Button>
         </div>
     )
 
@@ -162,29 +269,65 @@ function Payments(props) {
             <Table>
                 <TableHead>
                     <TableRow>
-                        {/* <TableCell>{`Count: ${count}`}</TableCell> */}
                         <TableCell>{`Total: ${total} €`}</TableCell>
                         <TableCell>{`PerMonth: ${perMonth} €`}</TableCell>
+                        <TableCell />
+                        <TableCell />
+                        <TableCell />
                         <TableCell>
-                            {datePicker("startDate", startDate, setStartDate, ["year", "month"], "MM.YY", yearStart, endDate)}
+                            {datePicker("from", startDate, setStartDate, ["year", "month"], "MM.YY", yearStart, endDate)}
                         </TableCell>
                         <TableCell>
-                            {datePicker("endDate", endDate, setEndDate, ["year", "month"], "MM.YY", startDate, yearEnd)}
+                            {datePicker("to", endDate, setEndDate, ["year", "month"], "MM.YY", startDate, yearEnd)}
                         </TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell>Date</TableCell>
+                        <TableCell>Created</TableCell>
+                        <TableCell>Bill Due</TableCell>
                         <TableCell>Amount</TableCell>
                         <TableCell>Notes</TableCell>
+                        <TableCell>Pdf</TableCell>
+                        <TableCell>
+                            {toMailList.length > 0 ?
+                                <Button variant="contained" color="primary"
+                                    className={classes.sendMailButton}
+                                    onClick={openMailDialog}
+                                    endIcon={<MailIcon />}>
+                                    Send
+                                </Button>
+                                : <IconButton disabled ><MailIcon /></IconButton>}
+                        </TableCell>
                         <TableCell className={classes.tableIcon}></TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
                     {data ? data.map(d => (
                         <TableRow key={d.date}>
+                            <TableCell>{formatDate(d.createdAt)}</TableCell>
                             <TableCell>{formatDate(d.date)}</TableCell>
                             <TableCell>{d.amount} €</TableCell>
                             <TableCell>{formatNotes(d.notes)}</TableCell>
+                            <TableCell>
+                                {d.imageName &&
+                                    <Button onClick={() => downloadImage({ name: d.imageName, data: d.imageData })}>
+                                        {d.imageName}
+                                    </Button>
+                                }
+                            </TableCell>
+                            <TableCell>
+                                <div>
+                                    <Checkbox
+                                        disabled={d.imageData == null}
+                                        checked={toMailList.find(x => x._id === d._id) != null}
+                                        onChange={() => handleMailList(d)}
+                                        color="primary" />
+                                    {d.mailed &&
+                                        <Tooltip title="Mail sent">
+                                            <IconButton><DoneAllIcon /></IconButton>
+                                        </Tooltip>
+                                    }
+                                </div>
+                            </TableCell>
                             <TableCell className={classes.tableIcon}>
                                 <IconButton onClick={() => onSetDeleteId(d._id)}>
                                     <DeleteForeverIcon />
@@ -210,6 +353,13 @@ function Payments(props) {
                 okText={"Delete"}
                 onOk={() => onDeletePayment(deleteId, startDate, endDate)}
             />
+            <input type="file"
+                id="fileinput"
+                style={{ display: "none" }}
+                accept=".pdf"
+                ref={elem => setInputRef(elem)}
+                onChange={() => loadFile()} />
+            {mailDialog}
         </React.Fragment>
     )
 }
@@ -218,6 +368,7 @@ const mapStateToProps = (state) => {
     return {
         data: state.payment.data,
         deleteId: state.payment.deleteId,
+        distinctNotes: state.payment.distinctNotes,
     }
 }
 
@@ -255,6 +406,20 @@ const mapDispatchToProps = (dispatch) => {
                     getData(start, end)
                 })
                 .catch(err => dispatch(setError(err.message)))
+        },
+        onGetDistinctNotes: () => {
+            payments.list({})
+                .then(res => {
+                    const allNotes = res.data.map(x => x.notes)
+                    const distinctNotes = [...new Set(allNotes)]
+                    if (distinctNotes.length === 0)
+                        distinctNotes.push("...")
+                    dispatch(setDistinctNotes(distinctNotes))
+                })
+                .catch(err => dispatch(setError(err.message)))
+        },
+        onSendMail: (from, to, title, content, payments) => {
+            console.log("Sending foo mail: ", from, to, title, content, payments)
         }
     }
 }

@@ -30,7 +30,7 @@ const Home = (props) => {
 	menuItems.push(<NavItem key={1} path="shoplist" icon={<ShoppingCartIcon />} />)
 	if (user.role === "admin") {
         menuItems.push(<NavItem key={2} path="payments" icon={<PaymentIcon />} />)
-        menuItems.push(<NavItem key={5} path="transactions" icon={<AccountBalanceIcon />} />)
+        // menuItems.push(<NavItem key={5} path="transactions" icon={<AccountBalanceIcon />} />)
 	}
 
 	return (

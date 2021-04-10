@@ -27,7 +27,7 @@
     "feathers-mongodb-fuzzy-search": "^1.1.1",
     "feathers-mongoose": "^8.2.0",
     "helmet": "^3.21.2",
-    "mongoose": "^5.8.4",
+    "mongoose": "^5.12.3",
     "tesseract.js": "^2.1.1"
   },
   "devDependencies": {
