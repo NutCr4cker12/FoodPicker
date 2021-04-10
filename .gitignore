@@ -4,3 +4,4 @@
 /.env*
 **/oauht.txt
 /.vscode/launch.json
+/node_modules

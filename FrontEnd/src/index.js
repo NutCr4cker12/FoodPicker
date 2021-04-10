@@ -17,6 +17,7 @@ import ShopList from './shoplist/Shoplist'
 import Payments from './payments/payments'
 import Transactions from './transactions/Transactions'
 import Categories from './categories/Categories'
+import Session from './payments/Session/Session'
 
 import reducers from './reducers'
 import { authUser } from './App/AppActions'
@@ -85,6 +86,7 @@ function initRender() {
 					<Route path="/foods" component={Foods} />
 					<Route path="/shoplist" component={ShopList} />
 					<Route path="/payments" component={Payments} />
+                    <Route path="/payments/session" component={Session} />
                     <Route path="/transactions" component={Transactions} />
                     <Route path="/categories" component={Categories} />
 				</Route>

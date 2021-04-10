@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { browserHistory } from 'react-router'
 
 import { makeStyles } from '@material-ui/core/styles';
 import { Paper, Button, TextField, Table, TableContainer, TableRow, TableCell, TableBody, TableHead, InputAdornment, IconButton } from '@material-ui/core'
@@ -74,7 +75,7 @@ function Payments(props) {
 
     if (data) {
         total = data.reduce((total, x) => total + x.amount, 0).toFixed(1)
-        const months = new Date(data[0].date).getUTCMonth() - new Date(data[data.length - 1].date).getUTCMonth() + 1
+        const months = data.length ? new Date(data[0].date).getUTCMonth() - new Date(data[data.length - 1].date).getUTCMonth() + 1 : 1;
         
         perMonth = (total / months).toFixed(1);
     }
@@ -146,6 +147,13 @@ function Payments(props) {
             >
                 Add Payment
 				</Button>
+            <Button 
+                className={classes.spacing}
+                variant="contained"
+                color="primary"
+                onClick={() => browserHistory.push("/payments/session")}>
+                Add multiple payments
+            </Button>
         </div>
     )
 

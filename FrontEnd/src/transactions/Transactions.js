@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 
 import { Button } from '@material-ui/core'
 
@@ -17,25 +17,83 @@ const useStyles = makeStyles(theme => ({
 const Transactions = props => {
     const classes = useStyles()
     const [state, setState] = useState({
-        labelManagerOpen : true,
+        labelManagerOpen: true,
     })
+    const imageLoadRef = useRef(null);
 
 
     useEffect(() => {
 
     }, [])
 
-    
+    const loadFile = () => {
+        if (typeof window.FileReader !== 'function') {
+            alert("The file API isn't supported on this browser yet.")
+            return;
+        }
+        let input = document.getElementById("fileinput");
+        if (!input)
+            console.error("Couldn't find the input element");
+        else if (!input.files)
+            console.error("Input files error");
+        else if (!input.files[0])
+            alert("Please select file first")
+        else {
+            const selectedFile = input.files[0];
+
+            input.files = null; // Enables the onChange event to fire next time
+            input.value = '';
+
+            console.log("Selected file: ", selectedFile)
+
+            let fileReader = new FileReader();
+            fileReader.onload = e => {
+                const foo = async () => {
+                    
+                }
+
+
+                foo()
+                // imageParser.create({ data: e.target.result })
+                //     .then(res => {
+                //         console.log("Got result: ", res)
+                //     })
+                //     .catch(err => {
+                //         console.log("ERROR: ", err)
+                //     })
+            }
+            fileReader.readAsDataURL(selectedFile);
+        }
+    }
+
+
     return <div className={classes.root}>
-        <Button 
-            className={classes.floatRightBtn}        
+        <Button variant="contained" color="primary" onClick={() => {
+            if (!imageLoadRef) {
+                console.log("No ref")
+                return;
+            }
+            if (!imageLoadRef.current) {
+                console.log("No current")
+                return;
+            }
+            console.log("Clicking ref")
+            imageLoadRef.current.click();
+        }}>
+            Load image
+        </Button>
+        <Button
+            className={classes.floatRightBtn}
             variant="contained"
             color="primary"
             onClick={() => {
                 browserHistory.push('/categories')
             }}>
-                Manage categories
+            Manage categories
             </Button>
+        <input type='file' id='fileinput' style={{ display: 'none' }}
+            accept=".bmp, .jpg, .png, .pbm"
+            ref={imageLoadRef} onChange={() => loadFile()} />
     </div>
 }
 
@@ -47,7 +105,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        
+
     }
 }
 
