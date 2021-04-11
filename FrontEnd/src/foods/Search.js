@@ -94,7 +94,6 @@ const mapDispatchToProps = (dispatch) => {
 			const query = { $regex: search }
 			foods.find(query)
 				.then(res => {
-					console.log(res)
 					dispatch(setOptions(res.data))
 				})
 				.catch(err => {

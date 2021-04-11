@@ -18,7 +18,7 @@ import { boldSearch } from '../core/BoldSearch'
 import { payments } from '../api'
 import { setError, setMessage } from '../App/AppActions';
 import { setData, setDeleteId, setDistinctNotes } from './paymentAction'
-import MailDialog from './MailDialog'
+import { openOnMail } from './MailDialog'
 import BackDialog from '../core/BackDialog'
 
 const useStyles = makeStyles(theme => ({
@@ -63,7 +63,8 @@ const formatNotes = note => {
     return `${note.substr(0, 50)}...`
 }
 
-const yearStart = new Date(2020, 0, 2)
+const firstDate = new Date(2020, 0, 1)
+const yearStart = new Date(new Date().getUTCFullYear(), 0, 1)
 const yearEnd = new Date(new Date().getUTCFullYear(), 11, 31)
 
 function Payments(props) {
@@ -74,12 +75,12 @@ function Payments(props) {
     const [date, setDate] = useState(new Date())
     const [amount, setAmount] = useState("")
     const [note, setNote] = useState("")
+    const [autoCompleteKey, setAutoCompleteKey] = useState(true)
     const [startDate, setStartDate] = useState(yearStart)
     const [endDate, setEndDate] = useState(yearEnd)
     const [image, setImage] = useState({});
     const [inputRef, setInputRef] = useState(null);
     const [toMailList, setToMailList] = useState([])
-    const [mailDialog, setMailDialog] = useState(null)
 
     var total, perMonth;
     useEffect(() => {
@@ -93,7 +94,7 @@ function Payments(props) {
 
     if (data) {
         total = data.reduce((total, x) => total + x.amount, 0).toFixed(1)
-        const months = data.length ? new Date(data[0].date).getUTCMonth() - new Date(data[data.length - 1].date).getUTCMonth() + 1 : 1;
+        const months = data.length ?  (new Date(data[0].date).getMonth() - startDate.getMonth()) : 1;
 
         perMonth = (total / months).toFixed(1);
     }
@@ -106,6 +107,7 @@ function Payments(props) {
         setDate(new Date())
         setAmount("")
         setNote("")
+        autoCompleteKey(!autoCompleteKey) // To re-render cleared autoComplete
         setImage({})
     }
 
@@ -170,15 +172,10 @@ function Payments(props) {
 
     }
 
-    const openMailDialog = () => {
-        setMailDialog(<MailDialog
-            payments={toMailList}
-            onSend={() => {
-                setMailDialog(null);
-                onSendMail(startDate, endDate, toMailList);
-            }}
-            onCancel={() => setMailDialog(null)}
-        />)
+    const openMailAndMarkSend = () => {
+        openOnMail(toMailList);
+        onSendMail(startDate, endDate, toMailList);
+        setToMailList([])
     }
 
     const datePicker = (label, value, setValue, views, format, minDate = new Date(2020, 0, 1), maxDate = yearEnd) => (
@@ -227,6 +224,8 @@ function Payments(props) {
             </div>
             <div className={classes.spacing}>
                 <Autocomplete
+                    key={autoCompleteKey}
+                    freeSolo
                     options={distinctNotes}
                     renderOption={option => boldSearch(option, note)}
                     renderInput={props =>
@@ -278,7 +277,7 @@ function Payments(props) {
                         <TableCell />
                         <TableCell />
                         <TableCell>
-                            {datePicker("from", startDate, setStartDate, ["year", "month"], "MM.YY", yearStart, endDate)}
+                            {datePicker("from", startDate, setStartDate, ["year", "month"], "MM.YY", firstDate, endDate)}
                         </TableCell>
                         <TableCell>
                             {datePicker("to", endDate, setEndDate, ["year", "month"], "MM.YY", startDate, yearEnd)}
@@ -294,7 +293,7 @@ function Payments(props) {
                             {toMailList.length > 0 ?
                                 <Button variant="contained" color="primary"
                                     className={classes.sendMailButton}
-                                    onClick={openMailDialog}
+                                    onClick={openMailAndMarkSend}
                                     endIcon={<MailIcon />}>
                                     Send
                                 </Button>
@@ -362,7 +361,6 @@ function Payments(props) {
                 accept=".pdf"
                 ref={elem => setInputRef(elem)}
                 onChange={() => loadFile()} />
-            {mailDialog}
         </React.Fragment>
     )
 }
@@ -425,10 +423,8 @@ const mapDispatchToProps = (dispatch) => {
             paymentList.forEach(payment => {
                 payments.patch(payment._id, { ...payment, mailed: true })
                     .then(res => {
-                        console.log("Updated payment: ", res)
                         if (payment._id === paymentList[paymentList.length - 1]._id) {
-                            console.log("Reached endm updating data")
-                            getData(start, end)
+                            setTimeout(() => getData(start, end), 500);
                         }
                     })
                     .catch(err => dispatch(setError(err.message)))
