@@ -172,8 +172,11 @@ function Payments(props) {
 
     const openMailDialog = () => {
         setMailDialog(<MailDialog
-            mails={toMailList}
-            onSend={(from, to, title, content) => onSendMail(from, to, title, content, toMailList)}
+            payments={toMailList}
+            onSend={() => {
+                setMailDialog(null);
+                onSendMail(startDate, endDate, toMailList);
+            }}
             onCancel={() => setMailDialog(null)}
         />)
     }
@@ -418,8 +421,18 @@ const mapDispatchToProps = (dispatch) => {
                 })
                 .catch(err => dispatch(setError(err.message)))
         },
-        onSendMail: (from, to, title, content, payments) => {
-            console.log("Sending foo mail: ", from, to, title, content, payments)
+        onSendMail: (start, end, paymentList) => {
+            paymentList.forEach(payment => {
+                payments.patch(payment._id, { ...payment, mailed: true })
+                    .then(res => {
+                        console.log("Updated payment: ", res)
+                        if (payment._id === paymentList[paymentList.length - 1]._id) {
+                            console.log("Reached endm updating data")
+                            getData(start, end)
+                        }
+                    })
+                    .catch(err => dispatch(setError(err.message)))
+            });
         }
     }
 }

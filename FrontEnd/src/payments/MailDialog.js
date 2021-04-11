@@ -13,28 +13,30 @@ const useStyles = makeStyles(theme => ({
     }
 }))
 
-const createDefaultContent = mails => {
-    return `Hei,
-    
-    Liitteenä taas laskuja.
+const formatDate = oDate => {
+    let date = new Date(oDate)
+    const month = date.getMonth() + 1
+    const day = date.getDate()
+    return `${day}.${month}`
+}
 
-    Ps. tämä sähköposti on automaattisesti generoitu. Jos laskut eivät aukea tai huomaat jotain outoa, ilmoitathan.
-    
-    Terveisin,
-    Kimi Heinonen`
+const createDefaultContent = payments => {
+    let paymentText = "";
+    payments.forEach(p => {
+        paymentText += `${p.notes}, ${p.amount}€, eräpäivä: ${formatDate(p.date)}\n`;
+    })
+    return `Hei,\n\nLiitteenä taas laskuja:\n\n${paymentText}\nTerveisin,\nKimi Heinonen\n`
 }
 
 const MailDialog = props => {
     const classes = useStyles()
-    const { mails, onSend, onCancel } = props;
+    const { payments, onSend, onCancel } = props;
     const [state, setState] = useState({
-        from: process.env.MAIL_FROM,
-        to: process.env.MAIL_TO,
+        from: process.env.REACT_APP_MAIL_FROM,
+        to: process.env.REACT_APP_MAIL_TO,
         title: "Laskuja",
-        content: createDefaultContent(mails)
+        content: createDefaultContent(payments)
     })
-
-    console.log("ENV: ", process.env)
 
     return (
         <Dialog open={true} onClose={onCancel} className={classes.container} fullWidth>
@@ -44,8 +46,8 @@ const MailDialog = props => {
                 <TextField className={classes.container} label="To" value={state.to} onChange={e => setState({ ...state, to: e.target.value })} />
                 <TextField className={classes.container} label="Title" value={state.title} onChange={e => setState({ ...state, title: e.target.value })} />
                 <div>
-                    {mails.map(mail => (
-                        <Button disabled id={mail._id} >{mail.imageName}</Button>
+                    {payments.map(payment => (
+                        <Button disabled key={payment._id} >{payment.imageName}</Button>
                     ))}
                 </div>
                 <TextField className={classes.container} label="Content" value={state.content} onChange={e => setState({ ...state, content: e.target.value })}
@@ -57,7 +59,10 @@ const MailDialog = props => {
                 <Button color="primary" onClick={onCancel}>
                     Cancel
                 </Button>
-                <Button variant="contained" color="primary" onClick={() => onSend(state.from, state.to, state.title, state.content)}>
+                <Button variant="contained" color="primary" onClick={() => {
+                    window.open(`mailto:${state.to}?subject=${state.title}&body=${encodeURIComponent(state.content)}`);
+                    onSend()
+                }}>
                     Send
                 </Button>
             </DialogActions>
