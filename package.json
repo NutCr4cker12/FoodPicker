@@ -11,7 +11,7 @@
     "start": "node frontend/src/index.js",
     "watch": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:ui": "cd FrontEnd/ && npm run build && xcopy build ..\\build /y",
+    "build:ui": "cd FrontEnd/ && npm run build && xcopy /e /y build ..\\build",
     "heroku": "git push heroku master && heroku open",
     "deploy": "npm run build:ui && git add . && git commit -m autobuild && git push origin master && git push heroku master && heroku open"
   },
