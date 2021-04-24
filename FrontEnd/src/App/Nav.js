@@ -10,7 +10,6 @@ import HomeIcon from '@material-ui/icons/Home';
 import FastfoodIcon from '@material-ui/icons/Fastfood';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 import PaymentIcon from '@material-ui/icons/Payment';
-import AccountBalanceIcon from '@material-ui/icons/AccountBalance';
 
 import { connect } from 'react-redux';
 import { closeDrawer, openDrawer } from './AppActions'

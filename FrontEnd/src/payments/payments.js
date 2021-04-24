@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { browserHistory } from 'react-router'
 
 import { makeStyles } from '@material-ui/core/styles';
 import { Paper, Button, TextField, Table, TableContainer, TableRow, TableCell, TableBody, TableHead, InputAdornment, IconButton, Checkbox, Tooltip } from '@material-ui/core'
@@ -13,12 +12,14 @@ import AddIcon from '@material-ui/icons/Add';
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
 import DoneAllIcon from '@material-ui/icons/DoneAll';
 import MailIcon from '@material-ui/icons/Mail';
+import AssignmentTurnedInIcon from '@material-ui/icons/AssignmentTurnedIn';
 
 import { boldSearch } from '../core/BoldSearch'
-import { payments } from '../api'
+import { payments, pendingPayments } from '../api'
 import { setError, setMessage } from '../App/AppActions';
 import { setData, setDeleteId, setDistinctNotes } from './paymentAction'
 import { openOnMail } from './MailDialog'
+import TableRowCheckBox from './TableRowCheckBox'
 import BackDialog from '../core/BackDialog'
 
 const useStyles = makeStyles(theme => ({
@@ -94,7 +95,7 @@ function Payments(props) {
 
     if (data) {
         total = data.reduce((total, x) => total + x.amount, 0).toFixed(1)
-        const months = data.length ?  (new Date(data[0].date).getMonth() - startDate.getMonth()) : 1;
+        const months = data.length ? (new Date(data[0].date).getMonth() - startDate.getMonth()) : 1;
 
         perMonth = (total / months).toFixed(1);
     }
@@ -107,7 +108,7 @@ function Payments(props) {
         setDate(new Date())
         setAmount("")
         setNote("")
-        autoCompleteKey(!autoCompleteKey) // To re-render cleared autoComplete
+        setAutoCompleteKey(!autoCompleteKey) // To re-render cleared autoComplete
         setImage({})
     }
 
@@ -169,13 +170,20 @@ function Payments(props) {
             toMailList.push(data);
             setToMailList([...toMailList]);
         }
-
     }
 
     const openMailAndMarkSend = () => {
-        openOnMail(toMailList);
-        onSendMail(startDate, endDate, toMailList);
-        setToMailList([])
+        const pending = {
+            isMarked: false,
+            ids: toMailList.map(x => x._id)
+        }
+        pendingPayments.create(pending)
+            .then(pendingEntity => {
+                openOnMail(toMailList, pendingEntity._id);
+                onSendMail(startDate, endDate, toMailList);
+                setToMailList([])
+            })
+            .catch(err => console.error(err))
     }
 
     const datePicker = (label, value, setValue, views, format, minDate = new Date(2020, 0, 1), maxDate = yearEnd) => (
@@ -271,17 +279,17 @@ function Payments(props) {
             <Table>
                 <TableHead>
                     <TableRow>
-                        <TableCell>{`Total: ${total} €`}</TableCell>
-                        <TableCell>{`PerMonth: ${perMonth} €`}</TableCell>
-                        <TableCell />
-                        <TableCell />
-                        <TableCell />
                         <TableCell>
                             {datePicker("from", startDate, setStartDate, ["year", "month"], "MM.YY", firstDate, endDate)}
                         </TableCell>
                         <TableCell>
                             {datePicker("to", endDate, setEndDate, ["year", "month"], "MM.YY", startDate, yearEnd)}
                         </TableCell>
+                        <TableCell>{`Total: ${total} €`}</TableCell>
+                        <TableCell>{`PerMonth: ${perMonth} €`}</TableCell>
+                        <TableCell />
+                        <TableCell />
+                        <TableCell />
                     </TableRow>
                     <TableRow>
                         <TableCell>Created</TableCell>
@@ -317,18 +325,11 @@ function Payments(props) {
                                 }
                             </TableCell>
                             <TableCell>
-                                <div>
-                                    <Checkbox
-                                        disabled={d.imageData == null}
-                                        checked={toMailList.find(x => x._id === d._id) != null}
-                                        onChange={() => handleMailList(d)}
-                                        color="primary" />
-                                    {d.mailed &&
-                                        <Tooltip title="Mail sent">
-                                            <IconButton><DoneAllIcon /></IconButton>
-                                        </Tooltip>
-                                    }
-                                </div>
+                                <TableRowCheckBox
+                                    rowData={d}
+                                    onChange={() => handleMailList(d)}
+                                    toMailList={toMailList}
+                                />
                             </TableCell>
                             <TableCell className={classes.tableIcon}>
                                 <IconButton onClick={() => onSetDeleteId(d._id)}>
@@ -381,7 +382,7 @@ const mapDispatchToProps = (dispatch) => {
                 $lt: end
             },
             $sort: {
-                date: -1
+                createdAt: -1
             }
         }).then(res => dispatch(setData(res.data)))
             .catch(err => dispatch(setError(err.message)))
@@ -419,16 +420,12 @@ const mapDispatchToProps = (dispatch) => {
                 })
                 .catch(err => dispatch(setError(err.message)))
         },
-        onSendMail: (start, end, paymentList) => {
-            paymentList.forEach(payment => {
-                payments.patch(payment._id, { ...payment, mailed: true })
-                    .then(res => {
-                        if (payment._id === paymentList[paymentList.length - 1]._id) {
-                            setTimeout(() => getData(start, end), 500);
-                        }
-                    })
-                    .catch(err => dispatch(setError(err.message)))
-            });
+        onSendMail: async (start, end, paymentList) => {
+            for (let index = 0; index < paymentList.length; index++) {
+                const payment = paymentList[index];
+                await payments.patch(payment._id, { mailed: true });
+            }
+            getData(start, end);
         }
     }
 }

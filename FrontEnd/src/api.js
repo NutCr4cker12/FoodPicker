@@ -165,9 +165,18 @@ const paymentsService = () => app.service('v1/payments')
 export const payments = {
 	list: query => paymentsService().find({ query: query }),
 	get: id => paymentsService().get(id),
-	create: payment => paymentsService().create(payment),
+	create: payment => paymentsService().create({ ...payment, paid: false }),
 	patch: (id, payment) => paymentsService().patch(id, payment),
 	remove: id => paymentsService().remove(id)
+}
+
+const pendingPaymentsService = () => app.service('v1/pending-payments')
+export const pendingPayments = {
+	list: query => pendingPaymentsService().find({ query: query }),
+	get: id => pendingPaymentsService().get(id),
+	create: pending => pendingPaymentsService().create(pending),
+	// patch: (id, pending) => pendingPaymentsService().patch(id, pending),
+	// remove: id => pendingPaymentsService().remove(id)
 }
 
 const transactionService = () => app.service('v1/transactions')

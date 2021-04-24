@@ -15,6 +15,7 @@ import Home from './home/home'
 import Foods from './foods/Foods'
 import ShopList from './shoplist/Shoplist'
 import Payments from './payments/payments'
+import MarkPendingPayment from './pending-payments/MarkPendingPayment'
 import Transactions from './transactions/Transactions'
 import Categories from './categories/Categories'
 import Session from './payments/Session/Session'
@@ -41,7 +42,7 @@ const app = feathers()
 	.configure(authentication({ storage: window.localStorage }))
 
 function handlePath(pathname) {
-	if (pathname === '/signin' || pathname === '/passwordreset') {
+	if (pathname === '/signin' || pathname.includes('/pending-payments:')) {
 		return;
 	}
 
@@ -86,6 +87,7 @@ function initRender() {
 					<Route path="/foods" component={Foods} />
 					<Route path="/shoplist" component={ShopList} />
 					<Route path="/payments" component={Payments} />
+                    <Route path="/pending-payments:id" component={MarkPendingPayment} />
                     {/* <Route path="/payments/session" component={Session} /> */}
                     {/* <Route path="/transactions" component={Transactions} />
                     <Route path="/categories" component={Categories} /> */}

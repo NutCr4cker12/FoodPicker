@@ -55,6 +55,7 @@ function SignIn(props) {
 							<TextField
 								className={classes.TextField}
 								label="Email"
+                                value={email}
 								fullWidth={true}
 								onChange={e => setEmail(e.target.value)}
 								type="email"
@@ -66,6 +67,7 @@ function SignIn(props) {
 							<TextField
 								className={classes.TextField}
 								label="Password"
+                                value={password}
 								fullWidth={true}
 								onChange={e => setPassword(e.target.value)}
 								type="password"
