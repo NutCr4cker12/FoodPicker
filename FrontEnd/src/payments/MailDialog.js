@@ -10,7 +10,7 @@ const createDefaultContent = (payments, markPaidId) => {
     payments.forEach(p => {
         paymentText += `${p.notes}, ${p.amount}€, eräpäivä: ${formatDate(p.date)} (${p.imageName})\n`;
     })
-    const url = `${process.env.REACT_APP_PUBLIC_URL}:${markPaidId}`;
+    const url = `${process.env.REACT_APP_MAIL_SERVICE_URL}/${markPaidId}`;
     return `Hei,\n\nLiitteenä taas laskuja:\n\n${paymentText}\n\n${url}\n\nTerveisin,\nKimi Heinonen\n`
 }
 
