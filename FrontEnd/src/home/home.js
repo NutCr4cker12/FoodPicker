@@ -7,7 +7,7 @@ import { browserHistory } from 'react-router'
 import FastfoodIcon from '@material-ui/icons/Fastfood';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 import PaymentIcon from '@material-ui/icons/Payment';
-import AccountBalanceIcon from '@material-ui/icons/AccountBalance';
+import TimelineIcon from '@material-ui/icons/Timeline';
 
 import { connect } from 'react-redux';
 import { closeDrawer } from '../App/AppActions'
@@ -30,7 +30,7 @@ const Home = (props) => {
 	menuItems.push(<NavItem key={1} path="shoplist" icon={<ShoppingCartIcon />} />)
 	if (user.role === "admin") {
         menuItems.push(<NavItem key={2} path="payments" icon={<PaymentIcon />} />)
-        // menuItems.push(<NavItem key={5} path="transactions" icon={<AccountBalanceIcon />} />)
+        menuItems.push(<NavItem key={3} path="minermonitor" icon={<TimelineIcon />} />)
 	}
 
 	return (

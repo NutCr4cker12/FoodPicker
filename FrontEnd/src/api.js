@@ -203,3 +203,18 @@ export const categoryTypesApi = {
 	patch: (id, type) => categoryTypeService().patch(id, type),
 	remove: id => categoryTypeService().remove(id)   
 }
+
+const hwinfoService = () => app.service('v1/hwinfo')
+export const hwinfoApi = {
+    list: query => hwinfoService().find({ query: query })
+}
+
+const nhService = () => app.service('v1/nh')
+export const nhApi = {
+    get: () => nhService().get({})
+}
+
+const binanceService = () => app.service('v1/binance')
+export const binanceApi = {
+    find: (query) => binanceService().find({ query: query })
+}

@@ -2,7 +2,7 @@ import React from 'react'
 
 import { Box, Typography } from '@material-ui/core';
 
-export default (props) => {
+const TabContent = (props) => {
 	const { children, value, index, ...other } = props;
 
 	return (
@@ -18,3 +18,5 @@ export default (props) => {
 		</Typography>
 	);
 }
+
+export default TabContent;

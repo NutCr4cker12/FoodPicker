@@ -16,6 +16,7 @@ import Foods from './foods/Foods'
 import ShopList from './shoplist/Shoplist'
 import Payments from './payments/payments'
 import MarkPendingPayment from './pending-payments/MarkPendingPayment'
+import MinerMonitor from './minermonitor/MonitorDashboard'
 import Transactions from './transactions/Transactions'
 import Categories from './categories/Categories'
 import Session from './payments/Session/Session'
@@ -88,6 +89,7 @@ function initRender() {
 					<Route path="/shoplist" component={ShopList} />
 					<Route path="/payments" component={Payments} />
                     <Route path="/pending-payments:id" component={MarkPendingPayment} />
+                    <Route path="/minermonitor" component={MinerMonitor} />
                     {/* <Route path="/payments/session" component={Session} /> */}
                     {/* <Route path="/transactions" component={Transactions} />
                     <Route path="/categories" component={Categories} /> */}

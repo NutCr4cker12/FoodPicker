@@ -24,10 +24,13 @@
     "@feathersjs/configuration": "^4.4.3",
     "@feathersjs/express": "^4.4.3",
     "cors": "^2.8.5",
+    "crypto-js": "^4.0.0",
     "feathers-mongodb-fuzzy-search": "^1.1.1",
     "feathers-mongoose": "^8.2.0",
     "helmet": "^3.21.2",
     "mongoose": "^5.12.3",
+    "node-fetch": "^2.6.1",
+    "qs": "^6.10.1",
     "tesseract.js": "^2.1.1"
   },
   "devDependencies": {

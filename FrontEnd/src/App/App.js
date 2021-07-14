@@ -10,29 +10,24 @@ import Profile from './profile'
 
 export default class App extends React.Component {
 
-	render() {
-		let navBar, profileMenu;
-		if (this.props.location.pathname !== "/signin") {
-			navBar =
-				<div>
-					<Nav />
-				</div>
-			profileMenu = <div><Profile /></div>
-		}
-		return (
-			<AppTheme>
-				<div>
-					<CssBaseline />
-					<Header location={this.props.location} />
-					{navBar}
-					{profileMenu}
-					<div>
-						{this.props.main}
-						{this.props.children}
-					</div>
-					<Message />
-				</div>
-			</AppTheme>
-		)
-	}
+    render() {
+        let navBar, profileMenu;
+        if (this.props.location.pathname !== "/signin") {
+            navBar = <Nav />
+            profileMenu = <Profile />
+        }
+        return (
+            <AppTheme>
+                <div>
+                    <CssBaseline />
+                    <Header location={this.props.location} />
+                    {navBar}
+                    {profileMenu}
+                    {this.props.main}
+                    {this.props.children}
+                    <Message />
+                </div>
+            </AppTheme>
+        )
+    }
 }

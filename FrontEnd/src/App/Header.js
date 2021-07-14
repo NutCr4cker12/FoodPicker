@@ -15,11 +15,9 @@ import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 const useStyles = makeStyles(theme => ({
 	navBar: {
 		zIndex: theme.zIndex.drawer + 1,
-		position: "fixed",
 		top: 0,
 		left: 0,
 		margin: 0,
-		// backgroundColor: theme.palette.primary.dark
 	},
 	separate: theme.separate
 }))
