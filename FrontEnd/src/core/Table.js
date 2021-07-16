@@ -53,8 +53,7 @@ const useStyles = makeStyles(theme => ({
 	}
 }));
 
-
-export default (props) => {
+const MyTable = (props) => {
 	const classes = useStyles();
 	const { columns, data, sort, setSort, limit, setLimit, onSelectFood, onAddFood, page, setPage, setOpenFilter } = props;
 	if (!data) return (
@@ -200,3 +199,4 @@ export default (props) => {
 		</div>
 	)
 }
+export default MyTable

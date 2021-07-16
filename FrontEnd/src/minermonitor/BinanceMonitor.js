@@ -80,40 +80,43 @@ const parseBinanceData = data => {
 
     let btc = data.find(x => x.symbol === "BTCEUR");
     if (btc) {
-        parsed.push({
+        const btcEUR = {
             symbol: "BTC",
             icon: 'BTC.png',
             price: parseFloat(btc.lastPrice),
             changePrice: parseFloat(btc.priceChange),
             changePercent: parseFloat(btc.priceChangePercent),
-        })
-    } else {
-        return parsed
-    }
+        }
+        parsed.push(btcEUR)
 
-    let eth = data.find(x => x.symbol === "ETHBTC");
-    if (eth) {
-        parsed.push({
-            symbol: "ETH",
-            icon: 'ETH.png',
-            price: parseFloat(eth.lastPrice) * parseFloat(btc.lastPrice),
-            changePrice: parseFloat(eth.priceChange),
-            changePercent: parseFloat(eth.priceChangePercent),
-        })
-    }
+        let eth = data.find(x => x.symbol === "ETHBTC");
 
+        if (eth) {
+            const ethBTC = parseFloat(eth.lastPrice)
+            const eth24hAgoAsEUR = (ethBTC + parseFloat(eth.priceChange)) * (btcEUR.price + btcEUR.changePrice); // ETHBTC * BTCEUR 24h ago
+            const ethNowAsEUR = ethBTC * btcEUR.price;
+            const priceChanged = ethNowAsEUR - eth24hAgoAsEUR
+
+            parsed.push({
+                symbol: "ETH",
+                icon: 'ETH.png',
+                price: ethNowAsEUR,
+                changePrice: priceChanged,
+                changePercent: priceChanged / eth24hAgoAsEUR,
+            })
+        }
+    }
     return parsed;
 }
 
 const BinanceMonitor = ({ refresh, data, setData }) => {
-    const fetchBinance = process.env.NODE_ENV == 'production';
+    const fetchBinance = process.env.NODE_ENV === 'production';
     const classes = useStyles()
 
     const fetchData = useCallback(() => {
         if (fetchBinance) {
             binanceApi.find({ symbols: ["BTCEUR", "ETHBTC"] })
                 .then(res => {
-                    console.log("GOT BINANCE DATA: ", res)
                     setData(parseBinanceData(res))
                 })
                 .catch(err => {
@@ -127,10 +130,6 @@ const BinanceMonitor = ({ refresh, data, setData }) => {
     useEffect(() => {
         fetchData();
     }, [refresh])
-
-    if (!data) {
-        return <></>
-    }
 
     return (
         <Paper elevation={4} className={classes.paper}>

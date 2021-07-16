@@ -6,7 +6,9 @@ import { Paper, IconButton } from '@material-ui/core'
 import RefreshIcon from '@material-ui/icons/Refresh';
 
 import { nhApi } from '../api';
+import { getDateTimeDifferenceString } from '../core/combineDates';
 import { makeStyles } from '@material-ui/core/styles';
+import SwibeTabs from '../core/SwibeTabs';
 import isEqual from 'lodash/isEqual'
 
 const useStyles = makeStyles(theme => ({
@@ -21,17 +23,41 @@ const useStyles = makeStyles(theme => ({
         width: "150px",
         textAlign: "center"
     },
+    statusContainer: {
+        position: "absolute",
+        top: "91%",
+        right: "16px"
+    },
     labelStyle: {
         lineHeight: "8px"
     },
     arcplotStyle: {
-        position: "absolute"
+        position: "absolute",
+        left: "calc(50% - 170px)",
+        top: "8px"
     },
+    timeLabelsContainer: {
+        position: "absolute",
+        height: "100%",
+        top: "calc(100% - 28px)"
+    },
+    timelabel: {
+        lineHeight: "0px",
+        marginTop: "4px",
+        fontSize: "0.705rem",
+        color: "#ffffff70"
+    },
+    gpuContainer: {
+        display: "flex",
+        justifyContent: "space-between"
+    },
+    gpuInnerContainer: { width: "45%" },
+    gpuLabelDiv: { display: "flex", justifyContent: "space-between", height: "22px" }
 }))
 
 const nhFoo = {
     devicesStatuses: { MINING: 2, DISABLED: 1 },
-    minerStatuses: { MINING: 1 },
+    minerStatuses: { MINING: 1, STOPPED: 1 },
     miningRigs: [{
         devices: [
             { name: "cpu", deviceType: { enumName: "CPU", description: "cpu" } },
@@ -78,6 +104,7 @@ const nhFoo = {
                 status: { enumName: "MINING", description: "Mining" },
             }
         ],
+        statusTime: "1626271434009",
         joinTime: 1625902469,
         localProfitability: 0.0002364248037036576,
         minerStatus: "MINING",
@@ -125,11 +152,15 @@ const parseData = data => {
         }))
 
     var totalSpeed = devices.reduce((a, b) => a + b.speed.reduce((c, d) => c + Number(d.speed), 0), 0);
+    if (data.devicesStatuses?.DISABLED)
+        delete data.devicesStatuses.DISABLED
+
     return {
         status: data.devicesStatuses,
         profitabilityBTC: data.totalProfitability,
         totalSpeed: totalSpeed,
-        devices: devices
+        devices: devices,
+        time: new Date(parseInt(data.miningRigs[0].statusTime))
     }
 }
 
@@ -182,20 +213,31 @@ const CustomCompare = (prevDeps, nextDeps) => {
     return isEqual(prevDeps, nextDeps)
 }
 
-const NHMonitor = ({ data, setData, setCombData, hwinfoData, refresh }) => {
-    const fetchNH = process.env.NODE_ENV == 'production';
+const CustomTimeLabelCompare = (prev, next) => {
+    for (let index = 0; index < prev.length; index++) {
+        if (prev[index] !== next[index])
+            return false;
+    }
+    return true;
+    // let prevHWTime = prev[prev.length - 1].length > 0 ? prev[prev.length - 1][0].time : null;
+    // let nextHWTime = next[next.length - 1].length > 0 ? next[next.length - 1][0].time : null;
+    // return prevHWTime === nextHWTime;
+}
+
+const NHMonitor = ({ data, setData, combData, setCombData, hwinfoData, refresh, setRefresh }) => {
+    const fetchNH = process.env.NODE_ENV === 'production';
     const classes = useStyles()
-    const [generatedData, setGeneratedData] = useState({
-        data: [],
-        labels: []
-    })
+    const [generatedData, setGeneratedData] = useState({ data: [], labels: [] })
+    const [timeLabels, setTimeLabels] = useState({ hwinfo: "--", nh: "--", updateTime: false })
 
     const fetchData = useCallback(() => {
+        let cancelled = false;
         if (fetchNH) {
             nhApi.get()
                 .then(res => {
+                    if (cancelled)
+                        return;
                     setData(parseData(res))
-                    // res.deviceStatuses.INACTIVE = 2 // When offline TODO IMPLEMENT
                 })
                 .catch(err => {
                     console.log("NH ERROR: ", err)
@@ -203,13 +245,34 @@ const NHMonitor = ({ data, setData, setCombData, hwinfoData, refresh }) => {
         } else {
             setData(parseData(nhFoo))
         }
+        return () => {
+            cancelled = true;
+        }
     }, [fetchNH])
 
     useEffect(fetchData, [refresh])
+
+    useCustomCompareEffect(
+        () => {
+            const hwinfoDataTimestamp = hwinfoData.length > 0 ? getDateTimeDifferenceString(new Date(hwinfoData[0].time)) : "--";
+            const nhTimestamp = data?.time ? getDateTimeDifferenceString(data.time) : "--";
+            setTimeLabels({ hwinfo: hwinfoDataTimestamp, nh: nhTimestamp, updateTime: timeLabels.updateTime })
+
+            let timeout = setTimeout(() => {
+                setTimeLabels({ ...timeLabels, updateTime: !timeLabels.updateTime })
+            }, 5000)
+
+            return () => {
+                clearTimeout(timeout)
+            }
+        },
+        [timeLabels.updateTime, data?.time, hwinfoData.length > 0 ? hwinfoData[0].time : null],
+        (prev, next) => CustomTimeLabelCompare(prev, next)
+    )
+
     useCustomCompareEffect(
         () => {
             const combinedData = combineDatas(data, hwinfoData);
-            console.log("Combined data: ", combinedData)
             if (!Object.keys(combinedData).length)
                 return;
             setCombData(combinedData)
@@ -221,7 +284,7 @@ const NHMonitor = ({ data, setData, setCombData, hwinfoData, refresh }) => {
                 ],
                 labels: [
                     combinedData.devices.length > 1 && <div key={"MemJuncLabel"}><p className={classes.labelStyle}>Mem: {combinedData.devices[1].MemJunctTemp?.toFixed(0)} &deg;</p></div>,
-                    <div key={"PowerLabel"}><p className={classes.labelStyle}>Power: {combinedData.totalSpeed?.toFixed(0)} W</p></div>,
+                    <div key={"PowerLabel"}><p className={classes.labelStyle}>Power: {combinedData.totalGPUPower?.toFixed(0)} W</p></div>,
                     <div key={"SpeedLabel"}><p className={classes.labelStyle}>Speed: {combinedData.totalSpeed?.toFixed(1)} MH/s</p></div>
                 ]
             })
@@ -230,37 +293,94 @@ const NHMonitor = ({ data, setData, setCombData, hwinfoData, refresh }) => {
         (prevDeps, nextDeps) => CustomCompare(prevDeps, nextDeps)
     )
 
-    // TODO Add layouts for more spefici info per gpu!
-    return (
-        <>
-            <Paper elevation={4} className={classes.paper} style={{ position: "relative", height: "200px" }}>
-                <IconButton className={classes.floatRight} onClick={() => fetchData()}>
-                    <RefreshIcon color="primary" />
-                </IconButton>
-                <XYPlot
-                    className={classes.arcplotStyle}
-                    xDomain={[-3, 3]}
-                    yDomain={[-3, 3]}
-                    width={300}
-                    height={300}>
-                    <ArcSeries
-                        colorType="literal"
-                        animation={{
-                            damping: 9,
-                            stiffness: 300
-                        }}
-                        radiusDomain={[0, 3]}
-                        data={generatedData.data}
-                        getLabel={d => d.name}
-                    />
-                </XYPlot>
-                {<div className={classes.labelContainer}>
-                    {generatedData.labels}
-                </div>
-                }
-            </Paper>
-        </>
+
+    const GPULabel = ({ title, value, alert }) => (
+        <div className={classes.gpuLabelDiv}>
+            <p className={classes.labelStyle}>{title}</p>
+            <p className={classes.labelStyle} style={alert ? { color: "red" } : {}}>{value}</p>
+        </div>
     )
+    // Labels for GPU Panels
+    const createGPULabel = (title, value, valueIsRed) => <div className={classes.gpuLabelDiv}>
+        <p className={classes.labelStyle}>{title}</p>
+        <p className={classes.labelStyle} style={valueIsRed ? { color: "red" } : {}}>{value}</p>
+    </div>
+
+    // Base Panel wrapper for all panels
+    const PanelBase = props => (
+        <Paper elevation={4} className={classes.paper} style={{ position: "relative", height: "200px", overflow: "hidden" }}>
+            <IconButton className={classes.floatRight} onClick={() => setRefresh()}>
+                <RefreshIcon color="primary" />
+            </IconButton>
+            <p style={{ marginLeft: "8px" }}>{props.title}</p>
+            {props.children}
+            <div className={classes.timeLabelsContainer}>
+                <p className={classes.timelabel}>HWinfo: {timeLabels.hwinfo}</p>
+                <p className={classes.timelabel}>NH: {timeLabels.nh}</p>
+            </div>
+        </Paper>
+    )
+
+    const overViewPanel = (
+        <PanelBase title="OverView">
+            <XYPlot
+                className={classes.arcplotStyle}
+                xDomain={[-3, 3]}
+                yDomain={[-3, 3]}
+                width={300}
+                height={300}>
+                <ArcSeries
+                    colorType="literal"
+                    animation={{
+                        damping: 9,
+                        stiffness: 300
+                    }}
+                    radiusDomain={[0, 3]}
+                    data={generatedData.data}
+                    getLabel={d => d.name}
+                />
+            </XYPlot>
+            {<div className={classes.labelContainer}>
+                {generatedData.labels}
+            </div>}
+            {combData?.status && <div className={classes.statusContainer}>
+                <p className={`${classes.labelStyle} ${classes.timelabel}`}>
+                    {JSON.stringify(combData.status)
+                        .split("{").join("")
+                        .split("}").join("")
+                        .split('"').join("")
+                        .split(":").join(": ")
+                    }
+                </p>
+            </div>
+            }
+        </PanelBase>
+    )
+
+    const gpuPanels = combData?.devices?.map(gpu => (
+        <PanelBase key={gpu.name} title={gpu.name.split(" ").slice(-1)[0]}>
+            <div className={classes.gpuContainer}>
+                <div className={classes.gpuInnerContainer}>
+                    <GPULabel title="GPU Temp: " value={<>{gpu.Temp?.toFixed(1)} &deg;</>} />
+                    <GPULabel title="HotSpot: " value={<>{gpu.HotSpotTemp?.toFixed(1)} &deg;</>} />
+                    {"MemJunctTemp" in gpu && <GPULabel title="MemJunc: " value={<>{gpu.MemJunctTemp?.toFixed(1)} &deg;</>} alert={gpu.MemJunctTemp > 100} />}
+                    <GPULabel title="Fans: " value={<>{gpu.Fan?.toFixed(1)} %</>} alert={gpu.Fan > 94} />
+                </div>
+                <div className={classes.gpuInnerContainer}>
+                    <GPULabel title="Power: " value={<>{gpu.Power?.toFixed(1)} W</>} />
+                    <GPULabel title="Speed: " value={<>{gpu.speed?.length > 0 ? parseFloat(gpu.speed[0]?.speed).toFixed(1) : 0} MH/s</>} />
+                    <GPULabel title="Algo: " value={gpu.speed?.length > 0 ? gpu.speed[0]?.title : "--"} />
+                    <GPULabel title="Status: " value={gpu.status.includes("OFFLINE") ? "OFFLINE" : gpu.status} alert={gpu.status.includes("OFFLINE")} />
+                </div>
+            </div>
+        </PanelBase>
+    ))
+
+    gpuPanels?.reverse()
+
+    // TODO time update interval
+
+    return <SwibeTabs hideTabs panels={gpuPanels ? [overViewPanel, ...gpuPanels] : [overViewPanel]} />
 }
 
 export default NHMonitor
