@@ -15,7 +15,8 @@ const useStyles = makeStyles(theme => ({
     horizontal: {
         display: "flex",
         alignItems: "center",
-        justifyContent: "space-between"
+        justifyContent: "space-between",
+        width: "85%"
     },
     margin: {
         margin: theme.spacing(1),
@@ -38,16 +39,16 @@ const binanceFoo = [{
     firstId: 56346219,
     highPrice: 28873.33000000,
     lastId: 56403679,
-    lastPrice: 28189.23000000,
+    lastPrice: "29755.55000000",
     lastQty: 0.00206800,
     lowPrice: 28019.55000000,
     openPrice: 28140.19000000,
     openTime: 1625856813703,
     prevClosePrice: 28144.97000000,
-    priceChange: 49.04000000,
-    priceChangePercent: 0.174,
+    priceChange: "-1488.48000000",
+    priceChangePercent: "-4.764",
     quoteVolume: 41071006.63447189,
-    symbol: "BTCEUR",
+    symbol: "BTCUSDT",
     volume: 1443.29207600,
     weightedAvgPrice: 28456.47621672,
 },
@@ -61,69 +62,56 @@ const binanceFoo = [{
     firstId: 282229466,
     highPrice: 0.06410600,
     lastId: 282375551,
-    lastPrice: 0.06256900,
+    lastPrice: "1749.66000000",
     lastQty: 0.31900000,
     lowPrice: 0.06202100,
     openPrice: 0.06386800,
     openTime: 1625856813687,
     prevClosePrice: 0.06387300,
-    priceChange: -0.00129900,
-    priceChangePercent: -2.034,
+    priceChange: "-122.63000000",
+    priceChangePercent: "-6.550",
     quoteVolume: 6506.87270971,
-    symbol: "ETHBTC",
+    symbol: "ETHUSDT",
     volume: 103275.20500000,
     weightedAvgPrice: 0.06300518,
 }]
 
-const parseBinanceData = data => {
+const parseBinanceData = (data, symbols) => {
     let parsed = []
 
-    let btc = data.find(x => x.symbol === "BTCEUR");
-    if (btc) {
-        const btcEUR = {
-            symbol: "BTC",
-            icon: 'BTC.png',
-            price: parseFloat(btc.lastPrice),
-            changePrice: parseFloat(btc.priceChange),
-            changePercent: parseFloat(btc.priceChangePercent),
-        }
-        parsed.push(btcEUR)
-
-        let eth = data.find(x => x.symbol === "ETHBTC");
-
-        if (eth) {
-            const ethBTC = parseFloat(eth.lastPrice)
-            const eth24hAgoAsEUR = (ethBTC + parseFloat(eth.priceChange)) * (btcEUR.price + btcEUR.changePrice); // ETHBTC * BTCEUR 24h ago
-            const ethNowAsEUR = ethBTC * btcEUR.price;
-            const priceChanged = ethNowAsEUR - eth24hAgoAsEUR
-
+    symbols.forEach(symbol => {
+        let s = data.find(x => x.symbol === symbol);
+        if (s) {
             parsed.push({
-                symbol: "ETH",
-                icon: 'ETH.png',
-                price: ethNowAsEUR,
-                changePrice: priceChanged,
-                changePercent: priceChanged / eth24hAgoAsEUR,
+                symbol: symbol.slice(0, 3),
+                icon: `${symbol.slice(0, 3)}.png`,
+                price: parseFloat(s.lastPrice),
+                changePrice: parseFloat(s.priceChange),
+                changePercent: parseFloat(s.priceChangePercent),
             })
         }
-    }
+    })
+
     return parsed;
 }
 
+const SYMBOLS = ["BTCUSDT", "ETHUSDT"]
+
 const BinanceMonitor = ({ refresh, data, setData }) => {
-    const fetchBinance = process.env.NODE_ENV === 'production';
+    const fetchBinance = process.env.NODE_ENV === 'production' // || true;
     const classes = useStyles()
 
     const fetchData = useCallback(() => {
         if (fetchBinance) {
-            binanceApi.find({ symbols: ["BTCEUR", "ETHBTC"] })
+            binanceApi.find({ symbols: SYMBOLS })
                 .then(res => {
-                    setData(parseBinanceData(res))
+                    setData(parseBinanceData(res, SYMBOLS))
                 })
                 .catch(err => {
                     console.log("Binance ERROR: ", err)
                 })
         } else {
-            setData(parseBinanceData(binanceFoo))
+            setData(parseBinanceData(binanceFoo, SYMBOLS))
         }
     }, [fetchBinance, setData])
 
@@ -132,16 +120,16 @@ const BinanceMonitor = ({ refresh, data, setData }) => {
     }, [refresh])
 
     return (
-        <Paper elevation={4} className={classes.paper}>
+        <Paper elevation={4} className={classes.paper} >
             <IconButton className={classes.floatRight} onClick={() => fetchData()}>
                 <RefreshIcon color="primary" />
             </IconButton>
             {data.map(x => (
                 <div className={classes.horizontal} key={x.symbol}>
-                    {/* <img source={`./public/${x.icon}`} alt={x.name} /> */}
-                    <p className={classes.margin} >{x.symbol}</p>
-                    <p className={classes.margin} >{x.price?.toFixed(0)} €</p>
-                    <div style={{ display: "contents" }}>
+                    <img source={`./build/${x.icon}`} alt={x.name} style={{ height: "50px", width: "50px" }} />
+                    <p className={classes.margin} style={{ width: "28px"}} >{x.symbol}</p>
+                    <p className={classes.margin} style={{ width: "252x"}} >$ {x.price?.toFixed(0)}</p>
+                    <div style={{ display: "contents", width: "66px" }}>
                         <p className={classes.margin}>{x.changePercent?.toFixed(1)} %</p>
                         {x.changePrice > 0 ?
                             <ArrowDropUpIcon className={classes.up} /> :

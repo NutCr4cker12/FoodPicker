@@ -225,7 +225,7 @@ const CustomTimeLabelCompare = (prev, next) => {
 }
 
 const NHMonitor = ({ data, setData, combData, setCombData, hwinfoData, refresh, setRefresh }) => {
-    const fetchNH = process.env.NODE_ENV === 'production';
+    const fetchNH = process.env.NODE_ENV === 'production' // || true;
     const classes = useStyles()
     const [generatedData, setGeneratedData] = useState({ data: [], labels: [] })
     const [timeLabels, setTimeLabels] = useState({ hwinfo: "--", nh: "--", updateTime: false })
