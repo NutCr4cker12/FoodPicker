@@ -108,7 +108,7 @@ const parseBinanceData = (data, symbols) => {
 const SYMBOLS = ["BTCUSDT", "ETHUSDT", "USDEUR"]
 
 const BinanceMonitor = ({ refresh, data, setData }) => {
-    const fetchBinance = process.env.NODE_ENV === 'production' // || true;
+    const fetchBinance = process.env.NODE_ENV === 'production' || true;
     const classes = useStyles()
 
     const fetchData = useCallback(() => {
@@ -136,7 +136,7 @@ const BinanceMonitor = ({ refresh, data, setData }) => {
             </IconButton>
             {data.map(x => (
                 <div className={classes.horizontal} key={x.symbol}>
-                    <img source={`./build/${x.icon}`} alt={x.name} style={{ height: "50px", width: "50px" }} />
+                    <img source={`./${x.icon}`} alt={x.name} style={{ height: "50px", width: "50px" }} />
                     <p className={classes.margin} style={{ width: "28px" }} >{x.symbol}</p>
                     <p className={classes.margin} style={{ width: "252x" }} >$ {x.price?.toFixed(0)}</p>
                     <div style={{ display: "contents", width: "66px" }}>

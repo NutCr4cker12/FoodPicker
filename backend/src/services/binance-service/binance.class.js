@@ -4,8 +4,8 @@ const { BadRequest } = require('@feathersjs/errors')
 const tryGetFloat = s => {
     let res = parseFloat(s[0].replace("<", "").replace(">", ""))
     if (Number.isNaN(res))
-        return ZEROUSDEUR;
-    return { symbol: "USDEUR", value: res };
+        return 0;
+    return res;
 }
 
 const ZEROUSDEUR = { symbol: "USDEUR", value: 0 }
@@ -29,13 +29,13 @@ const getUSDEUR = () => {
                     resolve(ZEROUSDEUR);
 
                 if (numMatches === 1) {
-                    resolve(tryGetFloat(numberMatches[0]))
+                    resolve({ symbol: "USDEUR", value: tryGetFloat(numberMatches[0]) })
                 }
 
                 const num = tryGetFloat(numberMatches[0]);
                 const fraction = parseFloat("0.00" + tryGetFloat(numberMatches[1]).toString());
                 const value = num + fraction
-                resolve({ symbol: "USDEUR", value: value});
+                resolve({ symbol: "USDEUR", value: value });
             })
             .catch(err => {
                 console.log(err)
