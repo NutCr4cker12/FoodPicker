@@ -74,28 +74,38 @@ const binanceFoo = [{
     symbol: "ETHUSDT",
     volume: 103275.20500000,
     weightedAvgPrice: 0.06300518,
+}, {
+    symbol: "USDEUR",
+    value: 0.86
 }]
 
 const parseBinanceData = (data, symbols) => {
     let parsed = []
 
-    symbols.forEach(symbol => {
+    let usdeur = 1;
+    let usdeurSymbol = data.find(x => x.symbol === "USDEUR");
+    if (usdeurSymbol) {
+        usdeur = usdeurSymbol.value;
+    }
+
+    symbols.filter(x => x !== "USDEUR").forEach(symbol => {
         let s = data.find(x => x.symbol === symbol);
         if (s) {
             parsed.push({
                 symbol: symbol.slice(0, 3),
                 icon: `${symbol.slice(0, 3)}.png`,
-                price: parseFloat(s.lastPrice),
-                changePrice: parseFloat(s.priceChange),
+                price: parseFloat(s.lastPrice) * usdeur,
+                changePrice: parseFloat(s.priceChange) * usdeur,
                 changePercent: parseFloat(s.priceChangePercent),
             })
+
         }
     })
 
     return parsed;
 }
 
-const SYMBOLS = ["BTCUSDT", "ETHUSDT"]
+const SYMBOLS = ["BTCUSDT", "ETHUSDT", "USDEUR"]
 
 const BinanceMonitor = ({ refresh, data, setData }) => {
     const fetchBinance = process.env.NODE_ENV === 'production' // || true;
@@ -127,8 +137,8 @@ const BinanceMonitor = ({ refresh, data, setData }) => {
             {data.map(x => (
                 <div className={classes.horizontal} key={x.symbol}>
                     <img source={`/${x.icon}`} alt={x.name} style={{ height: "50px", width: "50px" }} />
-                    <p className={classes.margin} style={{ width: "28px"}} >{x.symbol}</p>
-                    <p className={classes.margin} style={{ width: "252x"}} >$ {x.price?.toFixed(0)}</p>
+                    <p className={classes.margin} style={{ width: "28px" }} >{x.symbol}</p>
+                    <p className={classes.margin} style={{ width: "252x" }} >$ {x.price?.toFixed(0)}</p>
                     <div style={{ display: "contents", width: "66px" }}>
                         <p className={classes.margin}>{x.changePercent?.toFixed(1)} %</p>
                         {x.changePrice > 0 ?
