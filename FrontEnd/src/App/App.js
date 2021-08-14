@@ -6,7 +6,6 @@ import Message from './Message'
 
 import Nav from './Nav'
 import Profile from './profile'
-// import MediaQuery from 'react-responsive'
 
 export default class App extends React.Component {
 

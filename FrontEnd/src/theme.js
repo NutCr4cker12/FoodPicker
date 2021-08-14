@@ -44,7 +44,7 @@ const muiTheme = createMuiTheme({
 		flexGrow: 1
 	},
 	root: {
-		marginTop: "4rem"
+		marginTop: "0rem"
 	},
 	centerDivColumn: {
 		display: "flex",

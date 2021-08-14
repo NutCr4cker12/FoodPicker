@@ -38,7 +38,7 @@ const Filters = ({ onApply, filtersOpen, setOpenFilter, currentFilters, currentS
 
 	return (
 		<div>
-			<Dialog open={filtersOpen} onClose={() => {
+			<Dialog open={filtersOpen} maxWidth={"md"} onClose={() => {
 				setFilters(copyObj(currentFilters))
 				setSort(copyObj(currentSort))
 				setOpenFilter()
@@ -55,7 +55,9 @@ const Filters = ({ onApply, filtersOpen, setOpenFilter, currentFilters, currentS
 						<Tab label="Filters" />
 						<Tab label="Sort" />
 					</Tabs>
-					<TabContent value={tabValue} index={0} >
+					<TabContent value={tabValue} index={0} boxProps={{
+                        style: { paddingLeft: "0px" }
+                    }} >
 						<FilterSection
 							filters={filters}
 							setFilters={f => setFilters(copyObj(f))}

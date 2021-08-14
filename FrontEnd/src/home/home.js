@@ -27,7 +27,6 @@ const Home = (props) => {
 	let menuItems = []
 
 	menuItems.push(<NavItem key={0} path="foods" icon={<FastfoodIcon />} />)
-	menuItems.push(<NavItem key={1} path="shoplist" icon={<ShoppingCartIcon />} />)
 	if (user.role === "admin") {
         menuItems.push(<NavItem key={2} path="payments" icon={<PaymentIcon />} />)
         menuItems.push(<NavItem key={3} path="minermonitor" icon={<TimelineIcon />} />)

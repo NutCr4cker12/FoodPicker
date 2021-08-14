@@ -24,7 +24,6 @@ const Nav = ({user, drawerOpen, onOpenDrawer, onCloseDrawer, onNavigate}) => {
 		menuItems.push(<Divider key="div1" />)
 		menuItems.push(<NavItem key={1} path={"home"} icon={<HomeIcon/>} />)
 		menuItems.push(<NavItem key={2} path="foods" icon={<FastfoodIcon />} />)
-        menuItems.push(<NavItem key={3} path="shoplist" icon={<ShoppingCartIcon />} />)
 		if (user.role === "admin") {
             menuItems.push(<NavItem key={4} path="payments" icon={<PaymentIcon />} />)
             menuItems.push(<NavItem key={5} path="minermonitor" icon={<TimelineIcon />} />)

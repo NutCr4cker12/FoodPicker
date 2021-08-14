@@ -3,7 +3,7 @@ import React from 'react'
 import { makeStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import { foods } from '../api'
-import Filters from './Filters'
+import FilterDialog from './FilterDialog'
 import Search from './Search'
 import Table from '../core/Table'
 import FoodEdit from './foodEdit'
@@ -18,6 +18,12 @@ const useStyles = makeStyles(theme => ({
 }))
 
 const columns = ["Main", "Side", "Food", "Count", "LastEaten", "Cooking Time", "Food Amount"]
+const columnNameToFilter = {
+    "Main": "main",
+    "Side": "side",
+    "Food Amount": "day",
+    "Cooking Time": "speed"
+}
 
 const defaultFood = {
 	name: "Name",
@@ -31,38 +37,53 @@ const defaultFood = {
 
 const Foods = ({ foods, sort, onSelectFood, onRefresh, filters, search, setOpenFilter, page, limit, selectedFood, foodEdit, initFilters, onSetEditFood }) => {
 	const classes = useStyles()
-
-	if (!foods.limit) {  // Init fetching
-		initFilters()
+    const [filterOpen, setFilterOpen] = React.useState(false)
+    
+    React.useEffect(() => {
+        initFilters()
 		onRefresh(page, filters, sort, search, limit)
-	}
+    }, [])
 
+    const clearFilters = () => {
+        filters.speed = {$lt: 180}
+        Object.keys(filters)
+            .filter(x => x !== "speed")
+            .forEach(x => {
+                Object.keys(filters[x]).forEach(n => {
+                    filters[x][n] = "$in"
+                })
+        })
+        onRefresh(page, filters, {}, "", limit)
+    }
 
 	return (
 		<Paper className={classes.root}>
 			<Search search={search} onSelectFood={onSelectFood} />
-			<Filters
-				setOpenFilter={setOpenFilter}
-				currentFilters={filters}
-				currentSort={sort}
-				onApply={(f, s) => onRefresh(page, f, s, search, limit)}
-				clearFilters={() => initFilters()}
-			/>
 			<Table
 				columns={columns}
+                columnNameToFilter={columnNameToFilter}
 				data={foods}
 				sort={sort}
+				setSort={sort => onRefresh(0, filters, sort, search, limit)}
 				limit={limit}
-				setSort={sort => onRefresh(page, filters, sort, search, limit)}
 				setLimit={limit => onRefresh(page, filters, sort, search, limit)}
 				onSelectFood={onSelectFood}
+                setFilterOpen={headerName => setFilterOpen(headerName)}
 				onAddFood={() => onSetEditFood(defaultFood)}
 				setOpenFilter={setOpenFilter}
 				page={page}
 				setPage={p => onRefresh(p, filters, sort, search, limit)}
+                clearFilters={() => clearFilters()}
 			/>
 			{selectedFood ? <SelectedFood onUpdate={() => onRefresh(page, filters, sort, search, limit)} /> : null}
 			{foodEdit ? <FoodEdit foodEdit={foodEdit} onUpdate={() => onRefresh(page, filters, sort, search, limit)} /> : null}
+            <FilterDialog open={Boolean(filterOpen)} sort={sort} filters={filters} title={filterOpen} filterType={columnNameToFilter[filterOpen]} 
+                setFilters={(f, s) => onRefresh(0, f, s, search, limit)}
+                onClose={(f,s) => {
+                    setFilterOpen(false)
+                    onRefresh(0, f, s, search, limit)
+                }}
+            />
 		</Paper>
 	)
 }

@@ -136,9 +136,9 @@ const BinanceMonitor = ({ refresh, data, setData }) => {
             </IconButton>
             {data.map(x => (
                 <div className={classes.horizontal} key={x.symbol}>
-                    <img source={`./${x.icon}`} alt={x.name} style={{ height: "50px", width: "50px" }} />
+                    {/* <img source={`./${x.icon}`} alt={x.name} style={{ height: "50px", width: "50px" }} /> */}
                     <p className={classes.margin} style={{ width: "28px" }} >{x.symbol}</p>
-                    <p className={classes.margin} style={{ width: "252x" }} >$ {x.price?.toFixed(0)}</p>
+                    <p className={classes.margin} style={{ width: "252x" }} >€ {x.price?.toFixed(0)}</p>
                     <div style={{ display: "contents", width: "66px" }}>
                         <p className={classes.margin}>{x.changePercent?.toFixed(1)} %</p>
                         {x.changePrice > 0 ?

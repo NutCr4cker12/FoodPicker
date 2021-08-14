@@ -1,17 +1,5 @@
 import app from '.'
 
-let isChrome = navigator.userAgent.indexOf('Chrome') > -1
-// let isExplorer = navigator.userAgent.indexOf('MSIE') > -1
-// let isFirefox = navigator.userAgent.indexOf('Firefox') > -1
-let isSafari = navigator.userAgent.indexOf("Safari") > -1
-let isOpera = navigator.userAgent.toLowerCase().indexOf("op") > -1
-if (isChrome && isSafari) isSafari = false
-if (isChrome && isOpera) isChrome = false
-
-// const passwordChangeService = () => app.service('v1/password-change')
-// const passwordResetRequestService = () => app.service('v1/password-requestreset')
-// const passwordResetRequestAdminService = () => app.service('v1/password-requestreset-admin')
-// const passwordResetService = () => app.service('v1/password-reset')
 const userService = () => app.service('v1/users')
 export const users = {
 	list: query => {
@@ -28,15 +16,7 @@ export const users = {
 	remove: id => userService().remove(id),
 	authenticate: () => app.authentication.reAuthenticate(true),
 	signIn: (email, password) => app.authenticate({ strategy: 'local', email, password }),
-	//   signInGoogle: () => {
-	//     window.location.href = process.env.REACT_APP_OAUTH_URL + '/google';
-	//     return Promise.resolve(null)
-	//   },
-	signOut: () => app.logout(),
-	//   changePassword: (oldPassword, newPassword) => passwordChangeService().create({ oldPassword, newPassword }),
-	//   resetPassword: (id, token, password) => passwordResetService().create({ id, token, password }),
-	//   requestPasswordReset: email => passwordResetRequestService().create({ email }),
-	//   requestPasswordResetAdmin: email => passwordResetRequestAdminService().create({ email }),
+	signOut: () => app.logout()
 }
 
 const getSorting = (sort) => { // desc = -1, asc = 1
@@ -49,9 +29,9 @@ const getSorting = (sort) => { // desc = -1, asc = 1
 				return "sidetype"
 			case "food":
 				return "name"
-			case "Food Amount":
+			case "food amount":
 				return "foodamount"
-			case "Cooking Time":
+			case "cooking time":
 				return "time"
 			case "Last Eaten":
 				return "lasteaten"
@@ -149,18 +129,6 @@ export const foods = {
 	}
 }
 
-
-const shopListService = () => app.service('v1/shoplist')
-export const shoplist = {
-	list: query => {
-		return shopListService().find({ query: query })
-	},
-	get: id => shopListService().get(id),
-	create: item => shopListService().create(item),
-	patch: (id, item) => shopListService().patch(id, item),
-	remove: id => shopListService().remove(id)
-}
-
 const paymentsService = () => app.service('v1/payments')
 export const payments = {
 	list: query => paymentsService().find({ query: query }),
@@ -174,34 +142,7 @@ const pendingPaymentsService = () => app.service('v1/pending-payments')
 export const pendingPayments = {
 	list: query => pendingPaymentsService().find({ query: query }),
 	get: id => pendingPaymentsService().get(id),
-	create: pending => pendingPaymentsService().create(pending),
-	// patch: (id, pending) => pendingPaymentsService().patch(id, pending),
-	// remove: id => pendingPaymentsService().remove(id)
-}
-
-const transactionService = () => app.service('v1/transactions')
-export const transactionsApi = {
-    list: query => transactionService().find({ query: query }),
-    get: id => transactionService().get(id),
-    patch: (id, transaction) => transactionService().patch(id, transaction)
-}
-
-const categoriesService = () => app.service('v1/categories')
-export const categoriesApi = {
-    list: query => categoriesService().find({ query: query }),
-    get: id => categoriesService().get(id),
-    create: cateogry => categoriesService().create(cateogry),
-	patch: (id, cateogry) => categoriesService().patch(id, cateogry),
-	remove: id => categoriesService().remove(id)   
-}
-
-const categoryTypeService = () => app.service('v1/category-type')
-export const categoryTypesApi = {
-    list: query => categoryTypeService().find({ query: query }),
-    get: id => categoryTypeService().get(id),
-    create: type => categoryTypeService().create(type),
-	patch: (id, type) => categoryTypeService().patch(id, type),
-	remove: id => categoryTypeService().remove(id)   
+	create: pending => pendingPaymentsService().create(pending)
 }
 
 const hwinfoService = () => app.service('v1/hwinfo')

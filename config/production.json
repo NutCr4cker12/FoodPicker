@@ -22,17 +22,6 @@
 		"local": {
 		  "usernameField": "email",
 		  "passwordField": "password"
-		},
-		"oauth": {
-		  "redirect": "http://localhost:3000",      
-		  "google": {
-			"scope": [
-			  "openid",
-			  "profile",
-			  "email"
-			],
-			"nonce": true
-		  }
 		}
 	  }
 }

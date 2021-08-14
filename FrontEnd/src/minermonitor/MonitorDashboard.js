@@ -12,7 +12,6 @@ import ProfitabilityMonitor from './ProfitabilityMonitor';
 
 const useStyles = makeStyles(theme => ({
     root: {
-        paddingTop: theme.spacing(1),
         width: "100%",
         height: "100vh"
     },
@@ -33,7 +32,6 @@ const MinerMonitor = props => {
     const classes = useStyles()
 
     // TODO avg of the fee's -> reduce from profitability
-    // TODO create nice default one-clance view with "openable" cards (HWINFO)
 
     useEffect(() => {
         hwinfoApi.list({ $limit: 1, $sort: { "time": -1 } })

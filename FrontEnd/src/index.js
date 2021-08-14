@@ -13,13 +13,9 @@ import App from './App/App'
 import SignIn from './signin/SignIn'
 import Home from './home/home'
 import Foods from './foods/Foods'
-import ShopList from './shoplist/Shoplist'
 import Payments from './payments/payments'
 import MarkPendingPayment from './pending-payments/MarkPendingPayment'
 import MinerMonitor from './minermonitor/MonitorDashboard'
-import Transactions from './transactions/Transactions'
-import Categories from './categories/Categories'
-import Session from './payments/Session/Session'
 
 import reducers from './reducers'
 import { authUser } from './App/AppActions'
@@ -29,13 +25,10 @@ const store = createStore(reducers)
 if (process.env.NODE_ENV === "development") {
 	console.log('This app is using DEVELOPMENT environment');
 	console.log('REACT_APP_API_URL = ' + process.env.REACT_APP_API_URL);
-	console.log('REACT_APP_OAUTH_URL = ' + process.env.REACT_APP_OAUTH_URL);
 }
 if (process.env.NODE_ENV === "production") {
 	if (!process.env.REACT_APP_API_URL)
 		console.error('REACT_APP_API_URL is not set!')
-	if (!process.env.REACT_APP_OAUTH_URL)
-		console.error('REACT_APP_OAUTH_URL is not set!')
 }
 
 const app = feathers()
@@ -54,11 +47,6 @@ function handlePath(pathname) {
 		browserHistory.push('/signin');
 		return;
 	}
-
-	// if (pathname !== "/home" || pathname !== "/signin" || pathname !== "/foods" || pathname !== "/shoplist") {
-	// 	browserHistory.push("/home");
-	// 	return;
-	// }
 }
 
 function enterHandler() {
@@ -86,13 +74,9 @@ function initRender() {
 					<Route path="/home" component={Home} />
 					<Route path="/signin" component={SignIn} />
 					<Route path="/foods" component={Foods} />
-					<Route path="/shoplist" component={ShopList} />
 					<Route path="/payments" component={Payments} />
                     <Route path="/pending-payments:id" component={MarkPendingPayment} />
                     <Route path="/minermonitor" component={MinerMonitor} />
-                    {/* <Route path="/payments/session" component={Session} /> */}
-                    {/* <Route path="/transactions" component={Transactions} />
-                    <Route path="/categories" component={Categories} /> */}
 				</Route>
 			</Router>
 		</Provider>
