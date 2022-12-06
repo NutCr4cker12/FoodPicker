@@ -30,7 +30,7 @@
     "helmet": "^3.21.2",
     "mongoose": "^5.12.3",
     "node-fetch": "^2.6.1",
-    "qs": "^6.10.1",
+    "qs": "^6.10.3",
     "tesseract.js": "^2.1.1"
   },
   "devDependencies": {
